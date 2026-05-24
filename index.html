@@ -1,0 +1,2538 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>SB Target Report</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.47.0/tabler-icons.min.css" />
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg-primary: #ffffff;
+    --bg-secondary: #f5f4f0;
+    --bg-tertiary: #edece8;
+    --text-primary: #18180f;
+    --text-secondary: #5a5a52;
+    --text-tertiary: #8a8a80;
+    --border-light: rgba(0,0,0,0.09);
+    --border-med: rgba(0,0,0,0.16);
+    --border-strong: rgba(0,0,0,0.26);
+    --radius-md: 8px;
+    --radius-lg: 12px;
+    --blue: #1565C0;
+    --blue-light: #E3F0FF;
+    --blue-mid: #2979D4;
+    --green: #1B7A4A;
+    --green-light: #E3F5EC;
+    --amber: #B45309;
+    --amber-light: #FEF3C7;
+    --red: #C62828;
+    --red-light: #FEECEC;
+    --font: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    --font-mono: 'SF Mono', 'Fira Code', monospace;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg-primary: #18180f;
+      --bg-secondary: #22221a;
+      --bg-tertiary: #2a2a20;
+      --text-primary: #f0ede4;
+      --text-secondary: #a0a090;
+      --text-tertiary: #68685c;
+      --border-light: rgba(255,255,255,0.07);
+      --border-med: rgba(255,255,255,0.13);
+      --border-strong: rgba(255,255,255,0.22);
+      --blue: #5b9bea;
+      --blue-light: #0d2a50;
+      --blue-mid: #4287d6;
+      --green: #3ecf7e;
+      --green-light: #0d2e1d;
+      --amber: #f59e0b;
+      --amber-light: #2c1f05;
+      --red: #f06060;
+      --red-light: #2e0d0d;
+    }
+  }
+
+  body { font-family: var(--font); background: var(--bg-tertiary); color: var(--text-primary); min-height: 100vh; }
+
+  .shell { max-width: 1280px; margin: 0 auto; padding: 24px 20px; }
+
+  /* ── Header ── */
+  .header { display: flex; justify-content: space-between; align-items: flex-start; padding-bottom: 18px; border-bottom: 0.5px solid var(--border-light); margin-bottom: 18px; gap: 12px; flex-wrap: wrap; }
+  .header-left { display: flex; align-items: center; gap: 14px; }
+  .logo { width: 40px; height: 40px; border-radius: 10px; background: var(--blue-light); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .logo i { font-size: 20px; color: var(--blue); }
+  .title { font-size: 20px; font-weight: 600; letter-spacing: -0.3px; }
+  .subtitle { font-size: 12px; color: var(--text-secondary); margin-top: 2px; }
+  .header-actions { display: flex; gap: 8px; align-items: center; }
+
+  /* ── Tabs ── */
+  .tabs { display: flex; gap: 2px; margin-bottom: 18px; background: var(--bg-secondary); border: 0.5px solid var(--border-light); border-radius: var(--radius-md); padding: 3px; width: fit-content; }
+  .tab { padding: 6px 16px; font-size: 13px; border: none; border-radius: 6px; cursor: pointer; background: transparent; color: var(--text-secondary); font-family: var(--font); display: flex; align-items: center; gap: 6px; transition: all 0.15s; white-space: nowrap; }
+  .tab:hover { color: var(--text-primary); }
+  .tab.active { background: var(--bg-primary); color: var(--text-primary); font-weight: 500; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+
+  .section { display: none; }
+  .section.active { display: block; }
+
+  /* ── Buttons ── */
+  .btn { padding: 7px 14px; font-size: 13px; border: 0.5px solid var(--border-med); border-radius: var(--radius-md); cursor: pointer; background: transparent; color: var(--text-primary); font-family: var(--font); display: inline-flex; align-items: center; gap: 6px; transition: background 0.12s; white-space: nowrap; }
+  .btn:hover { background: var(--bg-secondary); }
+  .btn-primary { background: var(--blue); color: #fff; border-color: var(--blue); font-weight: 500; }
+  .btn-primary:hover { background: var(--blue-mid); }
+  .btn-sm { padding: 4px 10px; font-size: 12px; }
+
+  /* ── Status bar ── */
+  .status-bar { font-size: 12px; color: var(--text-secondary); padding: 5px 0 10px; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; min-height: 30px; }
+  .pill { display: inline-flex; align-items: center; gap: 4px; font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 10px; }
+  .pill-live { background: var(--red-light); color: var(--red); }
+  .pill-final { background: var(--bg-secondary); color: var(--text-tertiary); }
+  .pill-sched { background: var(--blue-light); color: var(--blue); }
+
+  /* ── Spinner ── */
+  .spinner { display: inline-block; width: 12px; height: 12px; border: 1.5px solid var(--border-med); border-top-color: var(--text-secondary); border-radius: 50%; animation: spin 0.7s linear infinite; flex-shrink: 0; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ── Lineup grid ── */
+  .lineup-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(310px, 1fr)); gap: 12px; }
+  .game-card { background: var(--bg-primary); border: 0.5px solid var(--border-light); border-radius: var(--radius-lg); overflow: hidden; }
+
+  .game-header { display: flex; justify-content: space-between; align-items: center; padding: 10px 14px; background: var(--bg-secondary); border-bottom: 0.5px solid var(--border-light); }
+  .matchup { font-size: 14px; font-weight: 600; letter-spacing: -0.2px; }
+  .game-meta { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--text-secondary); }
+
+  .pitchers-row { display: grid; grid-template-columns: 1fr 1fr; border-bottom: 0.5px solid var(--border-light); }
+  .pitcher-cell { padding: 7px 12px; }
+  .pitcher-cell:first-child { border-right: 0.5px solid var(--border-light); }
+  .pitcher-label { font-size: 10px; font-weight: 600; letter-spacing: 0.5px; color: var(--text-tertiary); text-transform: uppercase; margin-bottom: 2px; }
+  .pitcher-name { font-size: 12px; font-weight: 500; }
+  .pitcher-ttp { font-size: 11px; color: var(--text-secondary); margin-top: 1px; }
+  .ttp-fast { color: var(--red) !important; font-weight: 600; }
+  .ttp-slow { color: var(--green) !important; font-weight: 600; }
+
+  .score-row { display: flex; gap: 16px; padding: 6px 14px; font-size: 13px; background: var(--bg-secondary); border-bottom: 0.5px solid var(--border-light); align-items: center; }
+
+  .lineup-list { }
+  .lp { display: flex; align-items: center; gap: 7px; padding: 5px 12px; font-size: 13px; border-bottom: 0.5px solid var(--border-light); cursor: pointer; transition: background 0.1s; }
+  .lp:last-child { border-bottom: none; }
+  .lp:hover { background: var(--bg-secondary); }
+  .lp-num { width: 16px; font-size: 11px; color: var(--text-tertiary); flex-shrink: 0; text-align: right; }
+  .lp-pos { width: 26px; font-size: 10px; font-weight: 600; color: var(--text-secondary); background: var(--bg-secondary); border-radius: 3px; text-align: center; padding: 1px 2px; flex-shrink: 0; letter-spacing: 0.2px; }
+  .lp-name { flex: 1; font-size: 13px; }
+  .lp-team { font-size: 11px; color: var(--text-tertiary); margin-left: 3px; }
+  .sb-badge { font-size: 11px; font-weight: 700; padding: 2px 7px; border-radius: 8px; flex-shrink: 0; }
+  .sb-elite { background: var(--blue-light); color: var(--blue); }
+  .sb-good  { background: var(--green-light); color: var(--green); }
+  .sb-avg   { background: var(--amber-light); color: var(--amber); }
+  .sb-low   { display: none; }
+
+  /* ── SB Targets table ── */
+  .table-wrap { overflow-x: auto; }
+  table.sb-table { width: 100%; border-collapse: collapse; font-size: 13px; min-width: 820px; }
+  .sb-table th { padding: 9px 12px; text-align: left; font-size: 11px; font-weight: 600; color: var(--text-secondary); border-bottom: 0.5px solid var(--border-light); background: var(--bg-secondary); white-space: nowrap; cursor: pointer; user-select: none; letter-spacing: 0.3px; text-transform: uppercase; }
+  .sb-table th i { font-size: 10px; vertical-align: middle; }
+  .sb-table th:hover { color: var(--text-primary); }
+  .sb-table td { padding: 8px 12px; border-bottom: 0.5px solid var(--border-light); vertical-align: middle; }
+  .sb-table tr:last-child td { border-bottom: none; }
+  .sb-table tr:hover td { background: var(--bg-secondary); }
+  .rank-num { color: var(--text-tertiary); font-weight: 600; font-size: 12px; }
+
+  .hi-elite { color: var(--blue) !important; font-weight: 700; }
+  .hi-good  { color: var(--green) !important; font-weight: 600; }
+  .hi-warn  { color: var(--amber) !important; }
+  .hi-bad   { color: var(--red) !important; }
+
+  .score-chip { display: inline-flex; align-items: center; gap: 7px; }
+  .score-track { width: 56px; height: 5px; background: var(--bg-tertiary); border-radius: 3px; overflow: hidden; flex-shrink: 0; }
+  .score-fill { height: 100%; border-radius: 3px; }
+  .score-num { font-weight: 700; font-size: 13px; min-width: 26px; }
+
+  /* ── Legend ── */
+  .legend { display: flex; gap: 14px; flex-wrap: wrap; font-size: 12px; color: var(--text-secondary); margin-bottom: 14px; align-items: center; }
+  .leg-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .leg-item { display: flex; align-items: center; gap: 5px; }
+
+  /* ── Import panel ── */
+  .import-card { background: var(--bg-primary); border: 0.5px solid var(--border-light); border-radius: var(--radius-lg); padding: 18px; margin-bottom: 16px; }
+  .import-title { font-size: 14px; font-weight: 600; margin-bottom: 5px; display: flex; align-items: center; gap: 8px; }
+  .import-desc { font-size: 13px; color: var(--text-secondary); margin-bottom: 12px; line-height: 1.6; }
+  .import-desc code { font-family: var(--font-mono); font-size: 12px; background: var(--bg-secondary); padding: 1px 5px; border-radius: 4px; }
+  textarea.paste { width: 100%; height: 96px; font-size: 12px; font-family: var(--font-mono); padding: 9px 11px; border: 0.5px solid var(--border-light); border-radius: var(--radius-md); background: var(--bg-secondary); color: var(--text-primary); resize: vertical; }
+  textarea.paste:focus { outline: none; border-color: var(--border-strong); }
+
+  .add-grid { display: grid; gap: 8px; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); align-items: end; }
+  .field { display: flex; flex-direction: column; gap: 4px; }
+  .field label { font-size: 11px; font-weight: 600; color: var(--text-secondary); letter-spacing: 0.3px; text-transform: uppercase; }
+  .field input, .field select { padding: 7px 10px; font-size: 13px; border: 0.5px solid var(--border-light); border-radius: var(--radius-md); background: var(--bg-primary); color: var(--text-primary); font-family: var(--font); width: 100%; }
+  .field input:focus, .field select:focus { outline: none; border-color: var(--border-strong); }
+
+  .stat-status { font-size: 12px; padding: 6px 0; min-height: 26px; display: flex; align-items: center; gap: 6px; color: var(--text-secondary); }
+
+  /* ── Scoring explainer ── */
+  .explainer { background: var(--blue-light); border: 0.5px solid var(--border-light); border-radius: var(--radius-lg); padding: 14px 16px; margin-bottom: 14px; font-size: 13px; color: var(--text-primary); line-height: 1.7; }
+  .explainer strong { color: var(--blue); }
+
+  .empty { padding: 2.5rem; text-align: center; color: var(--text-secondary); font-size: 14px; background: var(--bg-primary); border: 0.5px solid var(--border-light); border-radius: var(--radius-lg); }
+
+  .section-label { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-tertiary); margin-bottom: 10px; }
+  hr.div { border: none; border-top: 0.5px solid var(--border-light); margin: 18px 0; }
+
+  .matchup-context { font-size: 12px; color: var(--text-secondary); }
+  .tag { display: inline-flex; align-items: center; gap: 3px; font-size: 11px; font-weight: 600; padding: 1px 7px; border-radius: 6px; }
+  .tag-vs { background: var(--bg-secondary); color: var(--text-secondary); }
+
+  .top-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px; margin-bottom: 16px; }
+  .top-card { background: var(--bg-primary); border: 0.5px solid var(--border-light); border-radius: var(--radius-lg); padding: 14px; }
+  .tc-rank { font-size: 11px; font-weight: 700; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; }
+  .tc-name { font-size: 15px; font-weight: 600; margin-bottom: 2px; }
+  .tc-team { font-size: 12px; color: var(--text-secondary); margin-bottom: 8px; }
+  .tc-score { font-size: 26px; font-weight: 700; margin-bottom: 6px; }
+  .tc-stats { display: flex; gap: 10px; flex-wrap: wrap; font-size: 12px; color: var(--text-secondary); }
+  .tc-stat { display: flex; flex-direction: column; gap: 1px; }
+  .tc-stat span:first-child { font-size: 10px; text-transform: uppercase; letter-spacing: 0.4px; }
+  .tc-stat span:last-child { font-weight: 600; color: var(--text-primary); font-size: 13px; }
+</style>
+</head>
+<body>
+<div class="shell">
+
+  <!-- Header -->
+  <div class="header">
+    <div class="header-left">
+      <div class="logo"><i class="ti ti-run"></i></div>
+      <div>
+        <div class="title">SB Target Report</div>
+        <div class="subtitle" id="report-date">Loading today's slate...</div>
+      </div>
+    </div>
+    <div class="header-actions">
+      <button class="btn btn-primary" onclick="fetchMLBStarters()"><i class="ti ti-baseball"></i> MLB Starters</button>
+      <button class="btn" onclick="refreshAll()"><i class="ti ti-refresh"></i> Refresh</button>
+    </div>
+  </div>
+
+  <!-- Tabs -->
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('targets',this)"><i class="ti ti-target"></i> SB Targets</button>
+    <button class="tab" onclick="switchTab('live',this)"><i class="ti ti-live"></i> Live Feed</button>
+    <button class="tab" onclick="switchTab('lineups',this)"><i class="ti ti-list-numbers"></i> Lineups</button>
+    <button class="tab" onclick="switchTab('import',this)"><i class="ti ti-database"></i> Import Stats</button>
+  </div>
+
+  <!-- ══ SB TARGETS ══ -->
+  <div id="section-targets" class="section active">
+    <div class="top-cards" id="top-cards"></div>
+
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; flex-wrap:wrap; gap:8px;">
+      <div class="legend">
+        <div class="leg-item"><div class="leg-dot" style="background:var(--blue)"></div> Elite (80+)</div>
+        <div class="leg-item"><div class="leg-dot" style="background:var(--green)"></div> Strong (65–79)</div>
+        <div class="leg-item"><div class="leg-dot" style="background:var(--amber)"></div> Average (50–64)</div>
+        <div class="leg-item"><div class="leg-dot" style="background:var(--red)"></div> Below avg (&lt;50)</div>
+      </div>
+      <div style="display:flex;gap:6px;">
+        <button class="btn btn-sm" onclick="const el=document.getElementById('odds-settings');el.style.display=el.style.display==='none'?'flex':'none'" title="Odds API settings"><i class="ti ti-brand-betway"></i> Odds</button>
+        <div id="odds-settings" style="display:none;background:var(--bg-secondary);border:0.5px solid var(--border-med);border-radius:8px;padding:10px 14px;margin-top:8px;display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+          <span style="font-size:12px;color:var(--text-secondary)">The Odds API key:</span>
+          <input id="odds-api-key" type="text" placeholder="Paste your key from the-odds-api.com" style="flex:1;min-width:200px;padding:4px 8px;font-size:12px;border:0.5px solid var(--border-med);border-radius:4px;background:var(--bg-primary);color:var(--text-primary);" value="${localStorage.getItem('oddsApiKey')||''}" oninput="localStorage.setItem('oddsApiKey',this.value)">
+          <button class="btn btn-sm btn-primary" onclick="fetchSBProps()"><i class="ti ti-refresh"></i> Fetch Props</button>
+          <span style="font-size:11px;color:var(--text-tertiary)">Free tier: 500 req/month · <a href="https://the-odds-api.com" target="_blank" style="color:var(--blue)">get key</a></span>
+        </div>
+      </div>
+      <div style="margin-top:4px;">
+        <select id="filter-team" class="field input" style="font-size:12px;padding:5px 8px;border-radius:var(--radius-md);border:0.5px solid var(--border-med);background:var(--bg-primary);color:var(--text-primary);" onchange="renderTargets()">
+          <option value="">All teams</option>
+        </select>
+        <button class="btn btn-sm" onclick="debugState()" title="Debug catcher matching"><i class="ti ti-bug"></i></button>
+      </div>
+    </div>
+
+    <div class="import-card" style="padding:10px 14px;margin-bottom:12px;font-size:13px;color:var(--text-secondary);display:flex;align-items:center;gap:8px;">
+      <i class="ti ti-info-circle" style="color:var(--blue);font-size:16px;flex-shrink:0"></i>
+      Scores weight: <strong style="color:var(--text-primary)">Stretch TTP 35</strong> · <strong style="color:var(--text-primary)">Pop Time 35</strong> · <strong style="color:var(--text-primary)">Exchange 15</strong> · <strong style="color:var(--text-primary)">Sprint 15</strong> · <span style="color:var(--red)">LHP −10</span> · <span style="color:var(--text-tertiary)">SB% display only</span>. Click any column header to sort.
+    </div>
+
+    <div class="import-card" style="padding:0;overflow:hidden;">
+      <div class="table-wrap">
+        <table class="sb-table" id="sb-table">
+          <thead>
+            <tr>
+              <th onclick="sortTable('rank')">#</th>
+              <th onclick="sortTable('name')">Runner</th>
+              <th onclick="sortTable('team')">Team</th>
+              <th onclick="sortTable('sprint')">Sprint Speed <i class="ti ti-chevrons-up-down"></i></th>
+              <th onclick="sortTable('sbPct')">SB% <i class="ti ti-chevrons-up-down"></i></th>
+              <th onclick="sortTable('ttp')">P-TTP (Stretch) <i class="ti ti-chevrons-up-down"></i><br><span style="font-size:10px;font-weight:400;text-transform:none">(opp pitcher)</span></th>
+              <th onclick="sortTable('popTime')">C Pop Time <i class="ti ti-chevrons-up-down"></i><br><span style="font-size:10px;font-weight:400;text-transform:none">(opp catcher)</span></th>
+              <th onclick="sortTable('score')">SB Score <i class="ti ti-chevrons-up-down"></i></th>
+              <th>SB Prop<br><span style="font-size:10px;font-weight:400;text-transform:none">line / odds</span></th>
+            </tr>
+          </thead>
+          <tbody id="sb-body"></tbody>
+        </table>
+      </div>
+    </div>
+    <div class="empty" id="targets-empty" style="display:none;margin-top:12px;">
+      No stats imported yet. Head to <strong>Import Stats</strong> to add runner and pitcher/catcher data.
+    </div>
+  </div>
+
+  <!-- ══ LINEUPS ══ -->
+  <div id="section-lineups" class="section">
+    <div class="status-bar" id="lineup-status"><span class="spinner"></span> Fetching today's lineups...</div>
+
+    <!-- Manual lineup paste -->
+    <div class="import-card" style="margin-bottom:14px;">
+      <div class="import-title" style="font-size:13px;"><i class="ti ti-clipboard-list" style="color:var(--blue)"></i> Paste Confirmed Lineups — from RotoWire</div>
+      <div class="import-desc" style="font-size:12px;margin-bottom:8px;">
+        Go to <a href="https://www.rotowire.com/baseball/daily-lineups.php" target="_blank" style="color:var(--blue)">rotowire.com/baseball/daily-lineups.php</a> → select all (Ctrl+A / Cmd+A) → copy → paste below.<br>
+        Automatically extracts catchers and updates SB Targets with correct C Pop Time matchups.
+      </div>
+      <textarea class="paste" id="lineup-paste" style="height:80px" placeholder="Paste full mlb.com/starting-lineups page text here..."></textarea>
+      <div style="margin-top:8px;display:flex;gap:8px;">
+        <button class="btn btn-primary btn-sm" onclick="importLineupPaste()"><i class="ti ti-file-import"></i> Import Lineups</button>
+        <span class="stat-status" id="lineup-paste-status" style="font-size:12px;"></span>
+      </div>
+    </div>
+
+    <div class="lineup-grid" id="lineup-grid"></div>
+  </div>
+
+  <!-- ══ LIVE SB FEED ══ -->
+  <div id="section-live" class="section">
+    <!-- Header + controls -->
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:8px;">
+      <div style="display:flex;gap:4px;background:var(--bg-secondary);border:0.5px solid var(--border-light);border-radius:var(--radius-md);padding:3px;">
+        <button class="tab active" id="live-tab-sb" onclick="switchLiveTab('sb',this)" style="font-size:12px;padding:5px 12px"><i class="ti ti-run"></i> Stolen Bases</button>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center;">
+        <span id="live-status" style="font-size:12px;color:var(--text-tertiary)">Not started</span>
+        <button class="btn btn-primary btn-sm" onclick="startLiveFeed()" id="live-start-btn"><i class="ti ti-player-play"></i> Start</button>
+        <button class="btn btn-sm" onclick="stopLiveFeed()" id="live-stop-btn" style="display:none"><i class="ti ti-player-stop"></i> Stop</button>
+        <button class="btn btn-sm" onclick="clearLiveFeed()"><i class="ti ti-trash"></i> Clear</button>
+      </div>
+    </div>
+
+    <!-- ── SB sub-section ── -->
+    <div id="live-sb-section">
+      <div id="live-stats-bar" style="display:none;background:var(--bg-secondary);border-radius:8px;padding:10px 14px;margin-bottom:12px;flex-wrap:wrap;gap:16px;">
+        <div style="text-align:center"><div style="font-size:22px;font-weight:700;color:var(--green)" id="live-sb-count">0</div><div style="font-size:11px;color:var(--text-tertiary)">Stolen Bases</div></div>
+        <div style="text-align:center"><div style="font-size:22px;font-weight:700;color:var(--red)" id="live-cs-count">0</div><div style="font-size:11px;color:var(--text-tertiary)">Caught Stealing</div></div>
+        <div style="text-align:center"><div style="font-size:22px;font-weight:700;color:var(--blue)" id="live-pct">—</div><div style="font-size:11px;color:var(--text-tertiary)">Success Rate</div></div>
+        <div style="text-align:center"><div style="font-size:22px;font-weight:700;color:var(--text-primary)" id="live-games">0</div><div style="font-size:11px;color:var(--text-tertiary)">Games Tracked</div></div>
+      </div>
+      <div id="live-feed" style="display:flex;flex-direction:column;gap:8px;">
+        <div class="live-placeholder"><i class="ti ti-player-play" style="font-size:32px;display:block;margin-bottom:8px;opacity:0.4"></i>Click Start to track stolen base attempts across all live games</div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ══ IMPORT STATS ══ -->
+  <div id="section-import" class="section">
+
+    <!-- Runner stats -->
+    <div class="import-card">
+      <div class="import-title"><i class="ti ti-run" style="color:var(--blue)"></i> Runner Sprint Speed — from Baseball Savant</div>
+      <div class="import-desc">
+        Paste directly from <a href="https://baseballsavant.mlb.com/sprint_speed_leaderboard" target="_blank" style="color:var(--blue)">baseballsavant.mlb.com/sprint_speed_leaderboard</a>.<br>
+        <strong>How to get it:</strong> Open the link → set Min Opportunities to <strong>1</strong> → copy the full table or download CSV → paste below.<br>
+        Auto-detects Savant format. Also accepts simple format: <code>Name, Team, SprintSpeed, SB%, SBAttempts</code>
+      </div>
+      <textarea class="paste" id="runner-csv" placeholder="Paste Baseball Savant sprint speed data here (including header row)&#10;&#10;Simple format also works:&#10;Elly De La Cruz,CIN,30.1,.88,25&#10;Bobby Witt Jr.,KC,29.4,.85,31" style="height:120px"></textarea>
+      <div style="margin-top:9px;display:flex;gap:8px;flex-wrap:wrap;">
+        <button class="btn btn-primary" onclick="importRunnerCSV()"><i class="ti ti-file-import"></i> Import Runners</button>
+        <button class="btn" onclick="loadSampleRunners()"><i class="ti ti-run"></i> Today's Lineups</button>
+      </div>
+    </div>
+
+    <!-- SB% stats -->
+    <div class="import-card">
+      <div class="import-title"><i class="ti ti-percentage" style="color:var(--green)"></i> Stolen Base % — from Baseball Savant</div>
+      <div class="import-desc">
+        Paste directly from <a href="https://baseballsavant.mlb.com/leaderboard/basestealing-run-value" target="_blank" style="color:var(--blue)">baseballsavant.mlb.com/leaderboard/basestealing-run-value</a>.<br>
+        <strong>How to get it:</strong> Open the link → set year to 2026, min attempts to 1 → copy the full table → paste below.<br>
+        Updates SB% and attempt count for runners already in your list.
+      </div>
+      <textarea class="paste" id="sbpct-csv" placeholder="Paste Baseball Savant basestealing data here (including header row)..." style="height:80px"></textarea>
+      <div style="margin-top:9px;display:flex;gap:8px;flex-wrap:wrap;">
+        <button class="btn btn-primary" onclick="importSBPctCSV()"><i class="ti ti-file-import"></i> Import SB%</button>
+      </div>
+    </div>
+
+    <!-- Pitcher TTP stats -->
+    <div class="import-card">
+      <div class="import-title"><i class="ti ti-circle-dashed" style="color:var(--amber)"></i> Pitcher Time to Plate (TTP)</div>
+      <div class="import-desc">
+        Pitcher TTP = time from first movement to pitch crossing plate. Slower = easier to steal.<br>
+        <code>PitcherName, Team, AvgTTP(sec), AvgTTPStretched(sec)</code><br>
+        Elite slow: &gt;1.45s. Elite fast: &lt;1.25s (difficult to run on). Savant avg ~1.32s.
+      </div>
+      <textarea class="paste" id="pitcher-csv" placeholder="PitcherName,Team,AvgTTP,StretchedTTP&#10;Marcus Stroman,CHC,1.52,1.55&#10;Zack Wheeler,PHI,1.28,1.31&#10;..."></textarea>
+      <div style="margin-top:9px;display:flex;gap:8px;flex-wrap:wrap;">
+        <button class="btn btn-primary" onclick="importPitcherCSV()"><i class="ti ti-file-import"></i> Import Pitchers</button>
+        <button class="btn" onclick="loadSamplePitchers()"><i class="ti ti-baseball"></i> Today's SPs</button>
+      </div>
+    </div>
+
+    <!-- Catcher pop times -->
+    <div class="import-card">
+      <div class="import-title"><i class="ti ti-circle" style="color:var(--red)"></i> Catcher Pop Times — from Baseball Savant</div>
+      <div class="import-desc">
+        Paste the CSV directly from <a href="https://baseballsavant.mlb.com/leaderboard/poptime" target="_blank" style="color:var(--blue)">baseballsavant.mlb.com/leaderboard/poptime</a>.<br>
+        <strong>How to get it:</strong> Open the link → set Min 2B Attempts to <strong>1</strong> → select all text in the table (Ctrl+A or Cmd+A on the page) and copy, <em>or</em> click the <strong>CSV</strong> download button, open the file, and copy all → paste below.<br>
+        Auto-detects comma, tab, or space-separated formats. Works with a direct table copy from the webpage.
+      </div>
+      <textarea class="paste" id="catcher-csv" placeholder="Paste the full CSV from Baseball Savant (including header row).&#10;&#10;The parser auto-detects columns — just paste whatever Savant exports.&#10;&#10;Simple format also works:&#10;Adley Rutschman,BAL,1.88,72&#10;Salvador Perez,KC,2.04,58" style="height:120px"></textarea>
+      <div style="margin-top:9px;display:flex;gap:8px;flex-wrap:wrap;">
+        <button class="btn btn-primary" onclick="importCatcherCSV()"><i class="ti ti-file-import"></i> Import Pop Times</button>
+        <button class="btn" onclick="loadSampleCatchers()"><i class="ti ti-baseball"></i> Today's Catchers</button>
+      </div>
+    </div>
+
+    <!-- Manual add runner -->
+    <hr class="div" />
+    <div class="section-label">Add runner manually</div>
+    <div class="add-grid" style="margin-bottom:8px;">
+      <div class="field" style="grid-column: span 2;"><label>Player Name</label><input id="m-name" placeholder="Elly De La Cruz" /></div>
+      <div class="field"><label>Team</label><input id="m-team" placeholder="CIN" maxlength="4" /></div>
+      <div class="field"><label>Sprint (ft/s)</label><input id="m-sprint" type="number" step="0.1" placeholder="29.5" /></div>
+      <div class="field"><label>SB%</label><input id="m-sbpct" type="number" step="0.01" placeholder="0.85" /></div>
+      <div class="field"><label>SB Attempts</label><input id="m-sba" type="number" placeholder="22" /></div>
+      <div class="field" style="justify-content:flex-end;"><label>&nbsp;</label><button class="btn btn-primary" onclick="addRunner()" style="height:36px;width:100%;justify-content:center;">Add</button></div>
+    </div>
+    <div class="stat-status" id="import-status"></div>
+
+    <hr class="div" />
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+      <div class="section-label">Imported data (<span id="runner-count">0</span> runners · <span id="pitcher-count">0</span> pitchers · <span id="catcher-count">0</span> catchers)</div>
+      <button class="btn btn-sm" onclick="clearAll()" style="color:var(--red)"><i class="ti ti-trash"></i> Clear all</button>
+    </div>
+
+    <div class="import-card" style="padding:0;overflow:hidden;margin-bottom:12px;">
+      <div class="table-wrap">
+        <table class="sb-table">
+          <thead><tr><th>Runner</th><th>Team</th><th>Sprint (ft/s)</th><th>SB%</th><th>SB Attempts</th><th>SB Score</th><th></th></tr></thead>
+          <tbody id="runner-table-body"></tbody>
+        </table>
+      </div>
+      <div class="empty" id="runner-empty" style="border:none;border-radius:0;">No runners imported.</div>
+    </div>
+
+    <div class="import-card" style="padding:0;overflow:hidden;margin-bottom:12px;">
+      <div class="table-wrap">
+        <table class="sb-table">
+          <thead><tr><th>Pitcher</th><th>Team</th><th>Throws</th><th>Avg TTP</th><th>Stretched TTP</th><th>Rating</th><th></th></tr></thead>
+          <tbody id="pitcher-table-body"></tbody>
+        </table>
+      </div>
+      <div class="empty" id="pitcher-empty" style="border:none;border-radius:0;">No pitchers imported.</div>
+    </div>
+
+    <div class="import-card" style="padding:0;overflow:hidden;">
+      <div class="table-wrap">
+        <table class="sb-table">
+          <thead><tr><th>Catcher</th><th>Team</th><th>Pop Time</th><th>Exchange</th><th>Max Effort%</th><th>Rating</th><th></th></tr></thead>
+          <tbody id="catcher-table-body"></tbody>
+        </table>
+      </div>
+      <div class="empty" id="catcher-empty" style="border:none;border-radius:0;">No catchers imported.</div>
+    </div>
+
+  </div>
+</div><!-- end shell -->
+
+<script>
+/* ================================================================
+   CONFIG
+================================================================ */
+// API key is handled server-side by proxy.js
+
+/* ================================================================
+   STATE
+================================================================ */
+let runners  = JSON.parse(localStorage.getItem('sb_runners')  || '[]');
+let pitchers = JSON.parse(localStorage.getItem('sb_pitchers') || '[]');
+let catchers = JSON.parse(localStorage.getItem('sb_catchers') || '[]');
+let lineupMap = {};   // team -> { batters:[{name,pos,order}], sp: pitcherName, catcher: catcherName }
+let sortCol = 'score', sortDir = -1;
+
+function persist() {
+  localStorage.setItem('sb_runners',  JSON.stringify(runners));
+  localStorage.setItem('sb_pitchers', JSON.stringify(pitchers));
+  localStorage.setItem('sb_catchers', JSON.stringify(catchers));
+}
+
+/* ================================================================
+   SB SCORE ENGINE
+   Sprint Speed 25pts | SB% 25pts | Pitcher TTP 25pts | Pop Time 25pts
+================================================================ */
+function sprintScore(s) {
+  // Weight: 15 pts max
+  if (!s) return 0;
+  if (s >= 30.0) return 15;
+  if (s >= 29.5) return 13;
+  if (s >= 29.0) return 11;
+  if (s >= 28.5) return 9;
+  if (s >= 28.0) return 7;
+  if (s >= 27.5) return 5;
+  if (s >= 27.0) return 3;
+  return Math.max(0, Math.round((s - 25) / 2 * 3));
+}
+
+function sbPctScore(pct, att) {
+  // Display only — not counted in score
+  return 0;
+}
+
+function ttpScore(ttp) {
+  // Weight: 35 pts max. Higher TTP = slower pitcher = easier steal
+  if (!ttp) return 17; // neutral
+  if (ttp >= 1.55) return 35;
+  if (ttp >= 1.48) return 31;
+  if (ttp >= 1.40) return 26;
+  if (ttp >= 1.35) return 20;
+  if (ttp >= 1.30) return 14;
+  if (ttp >= 1.25) return 8;
+  return 3;
+}
+
+function popScore(pop) {
+  // Weight: 35 pts max. Higher pop time = slower catcher = easier steal
+  if (!pop) return 17; // neutral
+  if (pop >= 2.10) return 35;
+  if (pop >= 2.05) return 31;
+  if (pop >= 2.00) return 26;
+  if (pop >= 1.97) return 20;
+  if (pop >= 1.93) return 14;
+  if (pop >= 1.90) return 8;
+  return 3;
+}
+
+// Known LHP — fallback when throws field not stored in pitcher data
+const KNOWN_LHP = new Set(['framber valdez','garrett crochet','max fried','blake snell',
+  'ranger suarez','nestor cortes','patrick corbin','andrew heaney','martin perez',
+  'wade miley','kyle freeland','matthew liberatore','ryan weathers','braxton garrett',
+  'cole ragans','yusei kikuchi','jose quintana','bryan hudson','drew rasmussen',
+  'tyler anderson','jose suarez','patrick sandoval','christian javier','kyle leahy',
+  'sean manaea','james paxton','edward cabrera','alex cobb','sandy alcantara','jose berrios',
+  'matthew boyd','zac gallen','nestor cortes','ryan weathers','braxton garrett']);
+
+function getPitcherThrows(pitcher) {
+  if (!pitcher) return null;
+  if (pitcher.throws === 'L' || pitcher.throws === 'R') return pitcher.throws;
+  const key = (pitcher.name||'').toLowerCase().replace(/[^a-z ]/g,'').trim();
+  return KNOWN_LHP.has(key) ? 'L' : 'R';
+}
+
+function exchangeScore(exchange) {
+  // Weight: 15 pts max. Lower exchange = faster transfer = harder to steal
+  if (exchange == null) return 7; // neutral
+  if (exchange >= 0.82) return 15;
+  if (exchange >= 0.78) return 13;
+  if (exchange >= 0.74) return 10;
+  if (exchange >= 0.70) return 7;
+  if (exchange >= 0.67) return 4;
+  if (exchange >= 0.64) return 2;
+  return 1;
+}
+
+function calcSBScore(runner, oppPitcher, oppCatcher) {
+  // Stretch TTP 35 | Pop Time 35 | Exchange 15 | Sprint 15 | LHP -10
+  const lhpMod = getPitcherThrows(oppPitcher) === 'L' ? -10 : 0;
+  return Math.max(0,
+    sprintScore(runner.sprint)
+    + ttpScore(oppPitcher?.stretchedTtp ?? oppPitcher?.ttp)
+    + popScore(oppCatcher?.popTime)
+    + exchangeScore(oppCatcher?.exchange)
+    + lhpMod);
+}
+
+function scoreTier(s) {
+  // Max score = 100 (25 each)
+  if (s >= 85) return 'elite';
+  if (s >= 70) return 'good';
+  if (s >= 50) return 'avg';
+  return 'low';
+}
+function scoreColor(s) {
+  const t = scoreTier(s);
+  return t==='elite'?'var(--blue)':t==='good'?'var(--green)':t==='avg'?'var(--amber)':'var(--red)';
+}
+
+/* ================================================================
+   LINEUP FETCH  — ET date logic, Tank01 + fallback
+================================================================ */
+function getETDateStr(offsetDays = 0) {
+  const etStr = new Date().toLocaleString('en-US', { timeZone: 'America/New_York' });
+  const et = new Date(etStr);
+  et.setDate(et.getDate() + offsetDays);
+  const y = et.getFullYear();
+  const m = String(et.getMonth() + 1).padStart(2,'0');
+  const d = String(et.getDate()).padStart(2,'0');
+  return `${y}${m}${d}`;
+}
+function getETDateISO(offsetDays = 0) {
+  const s = getETDateStr(offsetDays);
+  return `${s.slice(0,4)}-${s.slice(4,6)}-${s.slice(6,8)}`;
+}
+
+async function fetchLineups() {
+  const statusEl = document.getElementById('lineup-status');
+  const gridEl   = document.getElementById('lineup-grid');
+  statusEl.innerHTML = '<span class="spinner"></span> Fetching today\'s slate...';
+  gridEl.innerHTML   = '';
+  lineupMap = {};
+
+  // Quick proxy health check
+  try {
+    const ping = await fetch('http://localhost:3131/ping');
+    if (!ping.ok) throw new Error('Proxy not responding');
+  } catch(e) {
+    // Proxy not available — fall back directly to the free MLB Stats API for probable starters
+    statusEl.innerHTML = `<i class="ti ti-info-circle" style="color:var(--blue)"></i> Proxy not running — loading probable starters from MLB Stats API...`;
+    await fetchMLBStarters();
+    return;
+  }
+
+  const todayET     = getETDateStr(0);
+  const yesterdayET = getETDateStr(-1);
+  document.getElementById('report-date').textContent =
+    new Date().toLocaleDateString('en-US', { timeZone:'America/New_York', weekday:'long', year:'numeric', month:'long', day:'numeric' });
+
+  // ── Diagnostic panel ──
+  const diagEl = document.createElement('div');
+  diagEl.id = 'diag-panel';
+  diagEl.style.cssText = 'background:var(--bg-secondary);border:0.5px solid var(--border-med);border-radius:8px;padding:12px 14px;margin-bottom:14px;font-family:var(--font-mono);font-size:12px;line-height:1.9;color:var(--text-secondary);';
+  const existing = document.getElementById('diag-panel');
+  if (existing) existing.remove();
+  gridEl.parentNode.insertBefore(diagEl, gridEl);
+  function log(html) { diagEl.innerHTML += html + '<br>'; }
+
+  log(`<strong style="color:var(--text-primary)">🔍 API Diagnostic — ${new Date().toLocaleTimeString('en-US',{timeZone:'America/New_York'})}</strong>`);
+  log(`ET today: <b style="color:var(--text-primary)">${todayET}</b>  &nbsp;  yesterday: ${yesterdayET}`);
+
+  // ── Try Tank01 ──
+  for (const [label, dateStr] of [['today', todayET], ['yesterday', yesterdayET]]) {
+    try {
+      const url = `http://localhost:3131/proxy?host=tank01-mlb-live-in-game-real-time-statistics.p.rapidapi.com&path=/getMLBGamesForDate%3FgameDate%3D${dateStr}`;
+      const r = await fetch(url, {});
+      const deny = r.headers.get('x-deny-reason');
+      const text = await r.text();
+      let d = {};
+      try { d = JSON.parse(text); } catch(e) {}
+      const errMsg = deny ? ('Blocked: '+deny) : (d?.message || d?.error || '');
+      const rawGames = d?.body || d?.games || d?.data || (Array.isArray(d) ? d : []);
+      log(`Tank01 <b>${label}</b> (${dateStr}): HTTP <b style="color:${r.ok?'var(--green)':'var(--red)'}">${r.status}</b>  games: <b style="color:var(--text-primary)">${rawGames.length}</b>${errMsg ? '  <span style="color:var(--red)">'+errMsg+'</span>' : '  ✓'}`);
+      if (!r.ok || errMsg) { log(`  Snippet: ${text.slice(0,180)}`); continue; }
+      if (!rawGames.length) { log(`  Body is empty — no games returned for this date.`); continue; }
+
+      // Filter to ET-today games when using yesterday's bucket
+      let games = rawGames;
+      if (label === 'yesterday') {
+        games = rawGames.filter(g => {
+          if (!g.gameTime_epoch) return false;
+          const gET  = new Date(g.gameTime_epoch*1000).toLocaleDateString('en-US',{timeZone:'America/New_York'});
+          const nwET = new Date().toLocaleDateString('en-US',{timeZone:'America/New_York'});
+          return gET === nwET;
+        });
+        log(`  Filtered to ET-today: ${games.length} games`);
+      }
+      if (!games.length) continue;
+
+      // Normalize team fields (Tank01 sometimes uses different key names)
+      const norm = games.map(g => ({...g,
+        away: g.away || g.awayTeam || g.awayAbbr || '?',
+        home: g.home || g.homeTeam || g.homeAbbr || '?',
+      }));
+      log(`✅ <b style="color:var(--green)">Tank01 ${label} — rendering ${norm.length} games</b>`);
+      await renderGames(norm, statusEl, gridEl);
+      return;
+    } catch(e) {
+      log(`Tank01 ${label}: <span style="color:var(--red)">EXCEPTION — ${e.message}</span>`);
+    }
+  }
+
+  // ── MLB Official API fallback ──
+  try {
+    const iso = getETDateISO(0);
+    const url = `http://localhost:3131/proxy?host=mlb-data1.p.rapidapi.com&path=/schedule/games/%3FsportId%3D1%26startDate%3D${iso}%26endDate%3D${iso}%26gameType%3DR`;
+    const r = await fetch(url, {});
+    const deny = r.headers.get('x-deny-reason');
+    const text = await r.text();
+    let d = {};
+    try { d = JSON.parse(text); } catch(e) {}
+    const games = d?.dates?.[0]?.games || [];
+    const errMsg = deny ? ('Blocked: '+deny) : (d?.message || '');
+    log(`MLB Official (${iso}): HTTP <b style="color:${r.ok?'var(--green)':'var(--red)'}">${r.status}</b>  games: <b style="color:var(--text-primary)">${games.length}</b>${errMsg ? '  <span style="color:var(--red)">'+errMsg+'</span>' : ''}`);
+    if (!r.ok || errMsg || !games.length) { log(`  Snippet: ${text.slice(0,180)}`); }
+    if (r.ok && games.length) {
+      log(`✅ <b style="color:var(--green)">MLB Official — rendering ${games.length} games</b>`);
+      renderOfficialGames(games, statusEl, gridEl);
+      return;
+    }
+  } catch(e) {
+    log(`MLB Official: <span style="color:var(--red)">EXCEPTION — ${e.message}</span>`);
+  }
+
+  log(`<b style="color:var(--amber)">⚠ Proxy endpoints failed — falling back to free MLB Stats API for probable starters.</b>`);
+  await fetchMLBStarters();
+}
+
+async function renderGames(games, statusEl, gridEl) {
+  games.sort((a,b)=>(a.gameTime_epoch||0)-(b.gameTime_epoch||0));
+  const live  = games.filter(g=>(g.gameStatus||'').toLowerCase().includes('progress')).length;
+  const final = games.filter(g=>(g.gameStatus||'').toLowerCase().includes('final')||(g.gameStatus||'').toLowerCase().includes('completed')).length;
+  const sched = games.length - live - final;
+  let sum = `<i class="ti ti-check" style="color:var(--green)"></i> <strong>${games.length}</strong> games today`;
+  if (live)  sum += ` &nbsp;<span class="pill pill-live"><i class="ti ti-live"></i>${live} live</span>`;
+  if (final) sum += ` &nbsp;<span class="pill pill-final">${final} final</span>`;
+  if (sched) sum += ` &nbsp;<span class="pill pill-sched">${sched} upcoming</span>`;
+  statusEl.innerHTML = sum;
+
+  for (const g of games) {
+    const away  = g.away  || g.awayTeam  || '?';
+    const home  = g.home  || g.homeTeam  || '?';
+    // Tank01 exposes SP under several key patterns — check all of them
+    const awayP = g.probableStartingPitchers?.away
+      || g.awayStartingPitcher?.longName || g.awayStartingPitcher?.name
+      || g.awayProbablePitcher?.longName || g.awayProbablePitcher?.name
+      || g.away_probable_pitcher?.longName || g.away_probable_pitcher?.name
+      || null;
+    const homeP = g.probableStartingPitchers?.home
+      || g.homeStartingPitcher?.longName || g.homeStartingPitcher?.name
+      || g.homeProbablePitcher?.longName || g.homeProbablePitcher?.name
+      || g.home_probable_pitcher?.longName || g.home_probable_pitcher?.name
+      || null;
+    let timeStr = 'TBD';
+    if (g.gameTime_epoch) timeStr = new Date(g.gameTime_epoch*1000).toLocaleTimeString('en-US',{timeZone:'America/New_York',hour:'numeric',minute:'2-digit',timeZoneName:'short'});
+    else if (g.gameTime) timeStr = g.gameTime;
+
+    // build lineup map for both teams
+    const awayBatters = g.lineups?.awayBatters||[];
+    const homeBatters = g.lineups?.homeBatters||[];
+
+    const awayBatterObjs = awayBatters.map((p,i)=>({name:p.longName||p.name||'',pos:p.pos||'—',order:i+1}));
+    const homeBatterObjs = homeBatters.map((p,i)=>({name:p.longName||p.name||'',pos:p.pos||'—',order:i+1}));
+
+    // detect catcher from lineup (pos=C)
+    const awayC = awayBatterObjs.find(p=>p.pos==='C')?.name || null;
+    const homeC = homeBatterObjs.find(p=>p.pos==='C')?.name || null;
+
+    lineupMap[away] = { batters: awayBatterObjs, sp: awayP, catcher: awayC, oppSP: homeP, oppC: homeC, oppTeam: homeCode };
+    lineupMap[home] = { batters: homeBatterObjs, sp: homeP, catcher: homeC, oppSP: awayP, oppC: awayC, oppTeam: awayCode };
+
+    const card = buildCard(away, home, awayP, homeP, timeStr, g, awayBatterObjs, homeBatterObjs, away, home);
+    gridEl.appendChild(card);
+  }
+  populateTeamFilter();
+  renderTargets();
+}
+
+function buildCard(away, home, awayP, homeP, timeStr, g, awayBatters, homeBatters, awayCode, homeCode) {
+  const card = document.createElement('div');
+  card.className = 'game-card';
+
+  const status = (g.gameStatus||'').toLowerCase();
+  let statusPill = '';
+  if (status.includes('progress')) statusPill = '<span class="pill pill-live" style="font-size:10px;"><i class="ti ti-live"></i> Live</span>';
+  else if (status.includes('final')||status.includes('completed')) statusPill = '<span class="pill pill-final" style="font-size:10px;">Final</span>';
+
+  const awayPData = pitchers.find(p=>normName(p.name)===normName(awayP||''));
+  const homePData = pitchers.find(p=>normName(p.name)===normName(homeP||''));
+  const awayTTP = awayPData ? awayPData.ttp.toFixed(2)+'s' : '—';
+  const homeTTP = homePData ? homePData.ttp.toFixed(2)+'s' : '—';
+  const awayTTPClass = awayPData ? (awayPData.ttp>=1.45?'ttp-slow':awayPData.ttp<=1.28?'ttp-fast':'') : '';
+  const homeTTPClass = homePData ? (homePData.ttp>=1.45?'ttp-slow':homePData.ttp<=1.28?'ttp-fast':'') : '';
+
+  let scoreRow = '';
+  if (g.awayScore != null && !((g.gameStatus||'').toLowerCase().includes('sched'))) {
+    scoreRow = `<div class="score-row"><span style="font-weight:600">${awayCode} ${g.awayScore}</span><span style="color:var(--text-tertiary)">·</span><span style="font-weight:600">${homeCode} ${g.homeScore}</span>${g.currentInning?`<span style="margin-left:auto;font-size:12px;color:var(--text-secondary)">${g.inningState||''} ${g.currentInning}</span>`:''}</div>`;
+  }
+
+  const allBatters = [
+    ...awayBatters.map(b=>({...b, teamCode:awayCode, oppTeam:homeCode})),
+    ...homeBatters.map(b=>({...b, teamCode:homeCode, oppTeam:awayCode}))
+  ];
+
+  let lineupHTML = '';
+  if (allBatters.length) {
+    lineupHTML = allBatters.map(pl => {
+      const runner = runners.find(r => normName(r.name)===normName(pl.name));
+      if (!runner) return `<div class="lp"><span class="lp-num">${pl.order}</span><span class="lp-pos">${pl.pos}</span><span class="lp-name">${pl.name}<span class="lp-team">${pl.teamCode}</span></span></div>`;
+      // find opp pitcher and catcher
+      const oppSP  = pl.teamCode===awayCode ? homeP : awayP;
+      const oppPData = pitchers.find(p=>normName(p.name)===normName(oppSP||''));
+      const oppTeamLineup = lineupMap[pl.oppTeam];
+      const oppCName = oppTeamLineup?.catcher || null;
+      const oppCData = catchers.find(c=>normName(c.name)===normName(oppCName||''));
+      const sc   = calcSBScore(runner, oppPData, oppCData);
+      const tier = scoreTier(sc);
+      const badge = tier!=='low'?`<span class="sb-badge sb-${tier}">${sc}</span>`:'';
+      return `<div class="lp" onclick="highlightRunner('${pl.name.replace(/'/g,"\\'")}')"><span class="lp-num">${pl.order}</span><span class="lp-pos">${pl.pos}</span><span class="lp-name">${pl.name}<span class="lp-team">${pl.teamCode}</span></span>${badge}</div>`;
+    }).join('');
+  } else {
+    lineupHTML = '<div class="lp" style="color:var(--text-secondary);font-size:12px;">Lineup not yet posted</div>';
+  }
+
+  card.innerHTML = `
+    <div class="game-header">
+      <span class="matchup">${awayCode} @ ${homeCode}</span>
+      <div class="game-meta"><i class="ti ti-clock" style="font-size:12px"></i>${timeStr} ${statusPill}</div>
+    </div>
+    <div class="pitchers-row">
+      <div class="pitcher-cell">
+        <div class="pitcher-label">${awayCode} SP</div>
+        <div class="pitcher-name">${awayP||'TBD'}</div>
+        <div class="pitcher-ttp ${awayTTPClass}">TTP: ${awayTTP}</div>
+      </div>
+      <div class="pitcher-cell">
+        <div class="pitcher-label">${homeCode} SP</div>
+        <div class="pitcher-name">${homeP||'TBD'}</div>
+        <div class="pitcher-ttp ${homeTTPClass}">TTP: ${homeTTP}</div>
+      </div>
+    </div>
+    ${scoreRow}
+    <div class="lineup-list">${lineupHTML}</div>`;
+  return card;
+}
+
+function renderOfficialGames(games, statusEl, gridEl) {
+  games.sort((a,b)=>new Date(a.gameDate||0)-new Date(b.gameDate||0));
+  statusEl.innerHTML = `<i class="ti ti-check" style="color:var(--green)"></i> <strong>${games.length}</strong> games today`;
+  for (const g of games) {
+    const away  = g.teams?.away?.team?.abbreviation || g.teams?.away?.team?.name || 'Away';
+    const home  = g.teams?.home?.team?.abbreviation || g.teams?.home?.team?.name || 'Home';
+    const awayP = g.teams?.away?.probablePitcher?.fullName || g.teams?.away?.probablePitcher?.name || null;
+    const homeP = g.teams?.home?.probablePitcher?.fullName || g.teams?.home?.probablePitcher?.name || null;
+    const timeStr = g.gameDate ? new Date(g.gameDate).toLocaleTimeString('en-US',{timeZone:'America/New_York',hour:'numeric',minute:'2-digit',timeZoneName:'short'}) : 'TBD';
+    lineupMap[away] = lineupMap[away] || { batters:[], sp:awayP, catcher:null, oppSP:homeP, oppC:null, oppTeam:home };
+    lineupMap[away].sp = awayP; lineupMap[away].oppSP = homeP; lineupMap[away].oppTeam = home;
+    lineupMap[home] = lineupMap[home] || { batters:[], sp:homeP, catcher:null, oppSP:awayP, oppC:null, oppTeam:away };
+    lineupMap[home].sp = homeP; lineupMap[home].oppSP = awayP; lineupMap[home].oppTeam = away;
+    const card = buildCard(away, home, awayP, homeP, timeStr, g, [], [], away, home);
+    gridEl.appendChild(card);
+  }
+  populateTeamFilter();
+  renderTargets();
+}
+
+/* ================================================================
+   TARGETS TABLE
+================================================================ */
+function populateTeamFilter() {
+  const sel = document.getElementById('filter-team');
+  const teams = [...new Set(runners.map(r=>r.team))].sort();
+  const cur = sel.value;
+  sel.innerHTML = '<option value="">All teams</option>';
+  teams.forEach(t => { const o = document.createElement('option'); o.value=t; o.textContent=t; if(t===cur) o.selected=true; sel.appendChild(o); });
+}
+
+function buildTargetRows() {
+  const filterTeam = document.getElementById('filter-team')?.value || '';
+  const rows = [];
+  for (const runner of runners) {
+    if (filterTeam && runner.team !== filterTeam) continue;
+    // find which game this runner is in
+    const teamEntry = lineupMap[runner.team];
+    const oppSPName  = teamEntry?.oppSP || null;
+    const oppCName   = teamEntry?.oppC  || null;
+    const order      = teamEntry?.batters.find(b=>normName(b.name)===normName(runner.name))?.order || null;
+    const oppPData   = pitchers.find(p=>normName(p.name)===normName(oppSPName||''));
+    // Match catcher: by name if lineup posted, else by opposing team abbreviation
+    const oppTeamAbbr = teamEntry?.oppTeam || null;
+    const oppCData   = oppCName
+      ? catchers.find(c => normName(c.name) === normName(oppCName))
+      : (oppTeamAbbr ? catchers.find(c => c.team === oppTeamAbbr) : null);
+    const score = calcSBScore(runner, oppPData, oppCData);
+    rows.push({ ...runner, order, oppSP: oppSPName, oppC: oppCName, oppPData, oppCData, score });
+  }
+
+  // also include runners not in lineupMap (no lineup data yet) — still show with partial score
+  for (const runner of runners) {
+    if (filterTeam && runner.team !== filterTeam) continue;
+    if (rows.find(r=>normName(r.name)===normName(runner.name))) continue;
+    const score = calcSBScore(runner, null, null);
+    rows.push({ ...runner, order: null, oppSP: null, oppC: null, oppPData: null, oppCData: null, score });
+  }
+
+  return rows;
+}
+
+function sortTable(col) {
+  if (sortCol===col) sortDir*=-1; else { sortCol=col; sortDir=-1; }
+  renderTargets();
+}
+
+function renderTargets() {
+  const tbody = document.getElementById('sb-body');
+  const empty = document.getElementById('targets-empty');
+  const topCards = document.getElementById('top-cards');
+
+  if (!runners.length) { tbody.innerHTML=''; empty.style.display='block'; topCards.innerHTML=''; return; }
+  empty.style.display='none';
+
+  let rows = buildTargetRows();
+  rows.sort((a,b)=>{
+    const va=a[sortCol]??-999, vb=b[sortCol]??-999;
+    return (typeof va==='string'?va.localeCompare(vb):va-vb)*sortDir;
+  });
+
+  // top 3 cards
+  const top3 = [...rows].sort((a,b)=>b.score-a.score).slice(0,3);
+  topCards.innerHTML = top3.map((p,i) => {
+    const sprintStr = p.sprint ? p.sprint.toFixed(1)+' ft/s' : '—';
+    const ttpStr    = p.oppPData ? p.oppPData.ttp.toFixed(2)+'s TTP' : (p.oppSP||'No SP matched');
+    const popStr    = p.oppCData ? p.oppCData.popTime.toFixed(2)+'s pop' : (p.oppC||'No C matched');
+    const catcherName = p.oppC || p.oppCData?.name || '—';
+    const label = i===0?'#1 Target':i===1?'#2 Target':'#3 Target';
+    return `<div class="top-card">
+      <div class="tc-rank">${label}</div>
+      <div class="tc-name">${p.name}</div>
+      <div class="tc-team">${p.team}${p.oppSP?` vs ${p.oppSP}`:''}</div>
+      <div class="tc-score" style="color:${scoreColor(p.score)}">${p.score}</div>
+      <div class="tc-stats">
+        <div class="tc-stat"><span>Sprint</span><span>${sprintStr}</span></div>
+        <div class="tc-stat"><span>SB%</span><span>${p.sbPct!=null?(p.sbPct*100).toFixed(0)+'%':'—'}</span></div>
+        <div class="tc-stat"><span>P-TTP</span><span>${p.oppPData?(p.oppPData.stretchedTtp??p.oppPData.ttp).toFixed(2)+'s':'—'}</span></div>
+        <div class="tc-stat"><span>Pop</span><span>${p.oppCData?p.oppCData.popTime.toFixed(2)+'s':'—'}</span></div>
+      </div>
+    </div>`;
+  }).join('');
+
+  tbody.innerHTML = rows.map((p,i) => {
+    const sc  = p.score;
+    const t   = scoreTier(sc);
+    const barW = Math.min(sc,100).toFixed(0);
+    const sprintCls = p.sprint>=29.5?'hi-elite':p.sprint>=28.5?'hi-good':p.sprint<27.5?'hi-bad':'';
+    const ttpCls    = p.oppPData ? ((p.oppPData.stretchedTtp??p.oppPData.ttp)>=1.45?'hi-good':(p.oppPData.stretchedTtp??p.oppPData.ttp)<=1.28?'hi-bad':'') : '';
+    const popCls    = p.oppCData ? (p.oppCData.popTime>=2.05?'hi-good':p.oppCData.popTime<=1.93?'hi-bad':'') : '';
+    const sbCls     = p.sbPct>=0.85?'hi-elite':p.sbPct>=0.75?'hi-good':p.sbPct<0.65?'hi-bad':'';
+    return `<tr>
+      <td class="rank-num">${i+1}</td>
+      <td style="font-weight:600;white-space:nowrap">${p.name}</td>
+      <td style="color:var(--text-secondary)">${p.team}</td>
+      <td class="${sprintCls}">${p.sprint!=null?p.sprint.toFixed(1):'—'}</td>
+      <td class="${sbCls}">${p.sbPct!=null?(p.sbPct*100).toFixed(0)+'%':'—'}${p.sba?`<span style="font-size:11px;color:var(--text-tertiary);margin-left:4px">(${p.sba} att)</span>`:''}</td>
+      <td class="${ttpCls}">${p.oppPData?(p.oppPData.stretchedTtp??p.oppPData.ttp).toFixed(2)+'s':'—'}${getPitcherThrows(p.oppPData)==='L'?'<span style="font-size:10px;color:var(--red);margin-left:3px">LHP</span>':''}<br><span style="font-size:11px;color:var(--text-tertiary)">${p.oppSP||'—'}</span></td>
+
+      <td class="${popCls}">${p.oppCData?p.oppCData.popTime.toFixed(2)+'s':'—'}${p.oppCData?.exchange!=null?`<span style="font-size:10px;color:var(--text-tertiary);margin-left:3px">exch:${p.oppCData.exchange.toFixed(2)}s</span>`:''}<br><span style="font-size:11px;color:var(--text-tertiary)">${p.oppC||p.oppCData?.name||'—'}</span></td>
+      <td>
+        <div class="score-chip">
+          <div class="score-track"><div class="score-fill" style="width:${barW}%;background:${scoreColor(sc)}"></div></div>
+          <span class="score-num" style="color:${scoreColor(sc)}">${sc}</span>
+        </div>
+      </td>
+      <td style="white-space:nowrap">${renderSBProp(p.name)}</td>
+    </tr>`;
+  }).join('');
+}
+
+/* ================================================================
+   IMPORT / CRUD
+================================================================ */
+function normName(n) { return (n||'').toLowerCase().replace(/[^a-z0-9]/g,''); }
+
+function importRunnerCSV() {
+  const raw = document.getElementById('runner-csv').value.trim();
+  const statusEl = document.getElementById('import-status');
+  if (!raw) { statusEl.innerHTML = '<i class="ti ti-alert-circle" style="color:var(--amber)"></i> Nothing pasted yet.'; return; }
+
+  const lines = raw.replace(/\r\n/g, '\n').replace(/\r/g, '\n').split('\n').map(l => l.trim()).filter(Boolean);
+  if (lines.length < 2) { statusEl.innerHTML = '<i class="ti ti-alert-circle" style="color:var(--amber)"></i> Need at least a header row and one data row.'; return; }
+
+  const headerLine = lines[0].toLowerCase();
+  const isSavant   = headerLine.includes('sprint_speed') || headerLine.includes('last_name') || headerLine.includes('player_id');
+
+  let added = 0, updated = 0, skipped = 0;
+
+  if (isSavant) {
+    // ── Savant sprint_speed_leaderboard format ──
+    // Tab-delimited. Known columns (may vary slightly):
+    // last_name  first_name  player_id  team_id  team  position  age  competitive_runs  bolts  hp_to_1b  sprint_speed
+    // "Witt Jr.,"  "Bobby"   677951     118      KC    SS        26   77               46     4.16      30.4
+    // last_name has a trailing comma artifact. team (col 4) = abbreviation. sprint_speed = last col.
+
+    // Detect delimiter: tab first, then comma, then space
+    const delim = lines[0].includes('\t') ? '\t'
+                : lines[0].includes(',')  ? ','
+                : ' ';
+
+    function splitRow(line) {
+      if (delim === '\t') return line.split('\t').map(s => s.trim().replace(/^"|"$/g, ''));
+      if (delim === ',')  {
+        const res = []; let cur = '', q = false;
+        for (const ch of line) {
+          if (ch === '"') q = !q;
+          else if (ch === ',' && !q) { res.push(cur.trim()); cur = ''; }
+          else cur += ch;
+        }
+        res.push(cur.trim()); return res;
+      }
+      return line.trim().split(/\s+/);
+    }
+
+    const hdr = splitRow(lines[0]).map(c => c.toLowerCase().replace(/"/g, '').trim());
+
+    // Find column indices by exact name, with fallbacks
+    function col(...names) {
+      for (const n of names) { const i = hdr.indexOf(n); if (i !== -1) return i; }
+      for (const n of names) { const i = hdr.findIndex(c => c.includes(n)); if (i !== -1) return i; }
+      return -1;
+    }
+
+    const iLast  = col('last_name');
+    const iFirst = col('first_name');
+    const iName  = col('entity_name', 'player_name', 'name');
+    const iTeam  = col('team');           // abbreviation column (NOT team_id)
+    const iSpeed = col('sprint_speed');
+    const iTeamId= col('team_id');
+
+    // MLB numeric team_id fallback
+    const TEAM_ID = {108:'LAA',109:'OAK',110:'BAL',111:'BOS',112:'CHC',113:'CIN',114:'CLE',115:'COL',116:'DET',117:'HOU',118:'KC',119:'LAD',120:'WSH',121:'NYM',133:'OAK',134:'PIT',135:'SD',136:'SEA',137:'SF',138:'STL',139:'TB',140:'TEX',141:'TOR',142:'MIN',143:'PHI',144:'ATL',145:'CWS',146:'MIA',147:'NYY',158:'MIL'};
+
+    if (iSpeed === -1) {
+      statusEl.innerHTML = `<i class="ti ti-alert-triangle" style="color:var(--red)"></i> No sprint_speed column found.<br><span style="font-size:11px">Headers: <code>${hdr.join(' | ')}</code></span>`;
+      return;
+    }
+
+    let badSpeed = 0, noName = 0;
+
+    const targetBaseCol = col('key_target_base');
+  lines.slice(1).forEach(line => {
+    // Only process 'All' rows — skip '2B' and '3B' splits
+    if (targetBaseCol !== -1) {
+      const tbase = (line.split(delim)[targetBaseCol]||'').trim().replace(/"/g,'');
+      if (tbase && tbase !== 'All') return;
+    }
+      if (!line.trim()) return;
+      const c = splitRow(line);
+
+      // ── Name ──
+      let name = '';
+      if (iLast !== -1 && iFirst !== -1) {
+        const rawLast  = (c[iLast]  || '').trim();
+        const rawFirst = (c[iFirst] || '').trim();
+        // Case 1: last_name contains full "Last, First" (e.g. "Taveras, Leody")
+        if (rawLast.includes(',') && !rawLast.endsWith(',')) {
+          const ci = rawLast.indexOf(',');
+          name = (rawLast.slice(ci+1) + ' ' + rawLast.slice(0,ci)).trim();
+        } else {
+          // Case 2: last_name has trailing comma artifact "Witt Jr.,"
+          const last  = rawLast.replace(/,+$/, '').trim();
+          const first = rawFirst;
+          name = (first + ' ' + last).trim();
+        }
+      } else if (iName !== -1) {
+        name = (c[iName] || '').trim();
+        if (name.includes(',')) {
+          const ci = name.indexOf(',');
+          name = (name.slice(ci + 1) + ' ' + name.slice(0, ci)).trim();
+        }
+      } else {
+        noName++; return;
+      }
+      if (!name || name.length < 2) { noName++; return; }
+
+      // ── Team ──
+      let team = 'MLB';
+      if (iTeam !== -1) {
+        team = (c[iTeam] || '').trim().toUpperCase() || 'MLB';
+      } else if (iTeamId !== -1) {
+        const n = parseInt(c[iTeamId] || '');
+        team = (!isNaN(n) && TEAM_ID[n]) ? TEAM_ID[n] : 'MLB';
+      }
+
+      // ── Sprint speed ──
+      const sprint = parseFloat((c[iSpeed] || '').replace(/[^0-9.]/g, ''));
+      if (isNaN(sprint) || sprint < 18 || sprint > 38) { badSpeed++; return; }
+
+      // Update existing or add new
+      const xi = runners.findIndex(r => normName(r.name) === normName(name));
+      if (xi !== -1) { runners[xi].sprint = sprint; if (team !== 'MLB') runners[xi].team = team; updated++; }
+      else           { runners.push({ name, team, sprint, sbPct: null, sba: 0 }); added++; }
+    });
+
+    const total = added + updated;
+    if (total === 0) {
+      const sample = splitRow(lines[1]);
+      statusEl.innerHTML = `<i class="ti ti-alert-triangle" style="color:var(--amber)"></i> 0 runners imported.<br>
+<span style="font-size:11px;color:var(--text-tertiary)">
+iLast=${iLast} iFirst=${iFirst} iSpeed=${iSpeed} iTeam=${iTeam} | delim="${lines[0].includes('\t')?'TAB':'space/comma'}"<br>
+hdr: <code>${hdr.join(' | ')}</code><br>
+row[iLast]="${sample[iLast]}" row[iFirst]="${sample[iFirst]}" row[iSpeed]="${sample[iSpeed]}"<br>
+bad speed:${badSpeed} no name:${noName}
+</span>`;
+      return;
+    }
+    let msg = `<i class="ti ti-check" style="color:var(--green)"></i> <strong>${total}</strong> runners from Baseball Savant`;
+    if (added)    msg += ` · ${added} new`;
+    if (updated)  msg += ` · ${updated} speed updated`;
+    if (badSpeed) msg += ` · ${badSpeed} skipped (no speed data yet this season)`;
+    msg += `<br><span style="font-size:11px;color:var(--text-tertiary)">Next: click <b>MLB Starters</b> to populate lineups &amp; P-TTP</span>`;
+    statusEl.innerHTML = msg;
+
+  } else {
+    // ── Simple format: Name, Team, SprintSpeed, SB%, SBAttempts ──
+    lines.forEach(line => {
+      const p = line.split(',').map(s => s.trim());
+      if (p[0].toLowerCase() === 'name') return;
+      if (p.length < 3) { skipped++; return; }
+      const [name, team, sprint, sbPct, sba] = p;
+      if (!name || isNaN(parseFloat(sprint))) { skipped++; return; }
+      const xi = runners.findIndex(r => normName(r.name) === normName(name));
+      if (xi !== -1) { runners[xi].sprint = parseFloat(sprint); updated++; }
+      else           { runners.push({ name, team: (team || 'MLB').toUpperCase(), sprint: parseFloat(sprint), sbPct: parseFloat(sbPct) || null, sba: parseInt(sba) || 0 }); added++; }
+    });
+    let msg = `<i class="ti ti-check" style="color:var(--green)"></i> <strong>${added + updated}</strong> runners imported`;
+    if (updated) msg += ` · ${updated} updated`;
+    if (skipped) msg += ` · ${skipped} skipped`;
+    statusEl.innerHTML = msg;
+  }
+
+  document.getElementById('runner-csv').value = '';
+  persist(); renderRunnerTable(); renderTargets(); populateTeamFilter();
+}
+
+function importPitcherCSV() {
+  const raw = document.getElementById('pitcher-csv').value.trim();
+  const statusEl = document.getElementById('import-status');
+  let added=0, skipped=0;
+  raw.split('\n').forEach(line=>{
+    const p = line.split(',').map(s=>s.trim());
+    if (p[0].toLowerCase()==='pitchername'||p[0].toLowerCase()==='name') return;
+    if (p.length < 3) { skipped++; return; }
+    const [name,team,ttp,stretchedTtp] = p;
+    if (!name||isNaN(parseFloat(ttp))) { skipped++; return; }
+    if (!pitchers.find(pt=>normName(pt.name)===normName(name))) {
+      pitchers.push({name,team:team.toUpperCase(),ttp:parseFloat(ttp),stretchedTtp:parseFloat(stretchedTtp)||null});
+      added++;
+    }
+  });
+  document.getElementById('pitcher-csv').value='';
+  document.getElementById('import-status').innerHTML=`<i class="ti ti-check" style="color:var(--green)"></i> ${added} pitchers imported${skipped?` · ${skipped} skipped`:''}`;
+  persist(); renderPitcherTable(); renderTargets();
+}
+
+function importCatcherCSV() {
+  const raw = document.getElementById('catcher-csv').value.trim();
+  const statusEl = document.getElementById('import-status');
+  if (!raw) { statusEl.innerHTML='<i class="ti ti-alert-circle" style="color:var(--amber)"></i> Nothing pasted yet.'; return; }
+
+  // Split into rows, handle both \r\n and \n
+  const lines = raw.replace(/\r\n/g,'\n').replace(/\r/g,'\n').split('\n').map(l=>l.trim()).filter(Boolean);
+  if (lines.length < 2) { statusEl.innerHTML='<i class="ti ti-alert-circle" style="color:var(--amber)"></i> Need at least a header row and one data row.'; return; }
+
+  // ── Auto-detect delimiter: tab, comma, or whitespace ──
+  function detectDelim(line) {
+    if (line.includes('\t')) return '\t';
+    if (line.includes(',')) return ',';
+    return ' '; // space-separated (copied from webpage)
+  }
+  const delim = detectDelim(lines[0]);
+
+  function parseCSVRow(line) {
+    if (delim !== ',') {
+      // Tab or space: simple split, no quote handling needed
+      return line.split(delim).map(s => s.trim()).filter((s,i,a) =>
+        delim === ' ' ? true : true // keep all for tab; for space filter empties
+      ).filter(s => delim !== ' ' || s !== '');
+    }
+    // Comma: full quoted-field parser
+    const result = [];
+    let cur = '', inQuote = false;
+    for (let i = 0; i < line.length; i++) {
+      const ch = line[i];
+      if (ch === '"') { inQuote = !inQuote; }
+      else if (ch === ',' && !inQuote) { result.push(cur.trim()); cur = ''; }
+      else { cur += ch; }
+    }
+    result.push(cur.trim());
+    return result;
+  }
+
+  const headerCols = parseCSVRow(lines[0]).map(c => c.toLowerCase().replace(/"/g,'').trim());
+
+  // ── Column sniffing: find name, team, pop time columns by keyword matching ──
+  // Savant uses names like: player_name, last_name, first_name, name_display_first_last
+  // Pop time: pop_2b, pop2b, pop_time, poptime, avg_pop_2b
+  // Team: team, team_id, team_name
+  // Max effort arm: max_effort_arm_2b, maxeff_arm_2b, arm_strength
+
+  // exact=true requires full column name match; exact=false allows substring
+  function findCol(keywords, exact) {
+    for (const kw of keywords) {
+      const i = exact
+        ? headerCols.findIndex(c => c === kw)
+        : headerCols.findIndex(c => c.includes(kw));
+      if (i !== -1) return i;
+    }
+    return -1;
+  }
+
+  // Try to find a "full name" column first, then fallback combos
+  let nameCol  = findCol(['entity_name','player_name','full_name','name_display_first_last','playername','catcher']);
+  let teamCol  = findCol(['team_name_abbr','team_abbrev','team_abb','team_id','team']);
+  let popCol   = findCol(['pop_2b_sba','pop_2b_sb','pop_2b_cs','pop_2b','pop2b','avg_pop','pop_time','poptime'], true) !== -1 ? findCol(['pop_2b_sba','pop_2b_sb','pop_2b_cs','pop_2b','pop2b','avg_pop','pop_time','poptime'], true) : findCol(['pop_2b_sba','pop_2b_sb','pop_2b_cs','pop_2b','pop2b','avg_pop','pop_time','poptime','pop']);
+  let maxArmCol= findCol(['maxeff_arm_2b_3b_sba','maxeff_arm','max_effort_arm','arm_strength','max_effort']);
+
+  // If no single name col, look for last_name + first_name pair
+  const lastNameCol  = findCol(['last_name']);
+  const firstNameCol = findCol(['first_name']);
+  const useNameParts = nameCol === -1 && lastNameCol !== -1 && firstNameCol !== -1;
+  if (useNameParts) nameCol = lastNameCol; // placeholder, handled below
+
+  // If we still can't find a pop time col, scan numerically for values in pop-time range
+  if (popCol === -1) {
+    // Try each column index on first data row and pick the one that looks like a pop time (1.60–2.50)
+    const firstData = parseCSVRow(lines[1]);
+    for (let i = 0; i < firstData.length; i++) {
+      const v = parseFloat(firstData[i]);
+      if (!isNaN(v) && v >= 1.40 && v <= 3.50) { popCol = i; break; }
+    }
+  }
+
+  if (popCol === -1) {
+    // Show the user what headers we actually found to help debug
+    statusEl.innerHTML = `<i class="ti ti-alert-triangle" style="color:var(--red)"></i> Couldn't detect a pop time column. Headers found: <code>${headerCols.slice(0,10).join(', ')}</code> — paste the full CSV including the header row.`;
+    return;
+  }
+
+  if (nameCol === -1 && !useNameParts) {
+    statusEl.innerHTML = `<i class="ti ti-alert-triangle" style="color:var(--red)"></i> Couldn't detect a player name column. Headers found: <code>${headerCols.slice(0,10).join(', ')}</code>`;
+    return;
+  }
+
+  let added=0, skipped=0, dupes=0;
+  const isSavant = headerCols.some(c => c.includes('player_id') || c.includes('pop_2b') || c.includes('last_name'));
+
+  lines.slice(1).forEach(line => {
+    if (!line.trim()) return;
+    const cols = parseCSVRow(line);
+
+    let name;
+    if (useNameParts) {
+      const last  = (cols[lastNameCol]  || '').trim().replace(/"/g,'');
+      const first = (cols[firstNameCol] || '').trim().replace(/"/g,'');
+      name = first && last ? `${first} ${last}` : (first || last);
+    } else {
+      name = (cols[nameCol] || '').trim().replace(/"/g,'');
+      // Flip "Last, First" → "First Last" (Savant entity_name format)
+      if (name.includes(',')) {
+        const parts = name.split(',');
+        name = (parts[1].trim() + ' ' + parts[0].trim()).trim();
+      }
+    }
+
+    const CTEAM_ID = {108:'LAA',109:'OAK',110:'BAL',111:'BOS',112:'CHC',113:'CIN',114:'CLE',115:'COL',116:'DET',117:'HOU',118:'KC',119:'LAD',120:'WSH',121:'NYM',133:'OAK',134:'PIT',135:'SD',136:'SEA',137:'SF',138:'STL',139:'TB',140:'TEX',141:'TOR',142:'MIN',143:'PHI',144:'ATL',145:'CWS',146:'MIA',147:'NYY',158:'MIL'};
+    const rawTeam = teamCol !== -1 ? (cols[teamCol]||'').trim().replace(/"/g,'') : '';
+    const teamNum = parseInt(rawTeam);
+    const team    = (!isNaN(teamNum) && CTEAM_ID[teamNum]) ? CTEAM_ID[teamNum] : (rawTeam.toUpperCase() || 'MLB');
+    const popTime = parseFloat((cols[popCol]||'').replace(/"/g,''));
+    const maxArm  = maxArmCol !== -1 ? parseFloat((cols[maxArmCol]||'').replace(/"/g,'')) : NaN;
+    const exchColIdx = headerCols.findIndex(c => c.includes('exchange'));
+    const exchange = exchColIdx !== -1 ? parseFloat((cols[exchColIdx]||'').replace(/"/g,'')) : NaN;
+
+    if (!name || isNaN(popTime) || popTime < 1.40 || popTime > 3.50) { skipped++; return; }
+    if (catchers.find(c => normName(c.name) === normName(name))) { dupes++; return; }
+
+    catchers.push({ name, team, popTime, exchange: isNaN(exchange)?null:exchange, maxEffort: isNaN(maxArm) ? null : Math.round(maxArm) });
+    added++;
+  });
+
+  document.getElementById('catcher-csv').value = '';
+
+  let msg;
+  if (added === 0 && skipped > 0) {
+    const sampleRow = parseCSVRow(lines[1]);
+    const popVal = sampleRow[popCol] || '?';
+    const nameVal = sampleRow[nameCol] || '?';
+    msg = `<i class="ti ti-alert-triangle" style="color:var(--amber)"></i> 0 catchers imported — ${skipped} rows skipped.<br><span style="font-size:11px;color:var(--text-tertiary)">Name col: <b>${headerCols[nameCol]||'none'}</b> = "${nameVal}" | Pop col: <b>${headerCols[popCol]||'none'}</b> = "${popVal}" (need 1.40–3.50)<br>All headers: ${headerCols.join(', ')}</span>`;
+  } else {
+    msg = `<i class="ti ti-check" style="color:var(--green)"></i> <strong>${added}</strong> catchers imported${isSavant ? ' from Savant CSV' : ''}`;
+    if (dupes)   msg += ` · ${dupes} already in list`;
+    if (skipped) msg += ` · ${skipped} rows skipped`;
+    if (isSavant) msg += `<br><span style="font-size:11px;color:var(--text-tertiary)">Live Statcast pop times from Baseball Savant</span>`;
+  }
+  statusEl.innerHTML = msg;
+  persist(); renderCatcherTable(); renderTargets();
+}
+
+function addRunner() {
+  const name   = document.getElementById('m-name').value.trim();
+  const team   = document.getElementById('m-team').value.trim().toUpperCase();
+  const sprint = parseFloat(document.getElementById('m-sprint').value);
+  const sbPct  = parseFloat(document.getElementById('m-sbpct').value) || null;
+  const sba    = parseInt(document.getElementById('m-sba').value) || 0;
+  const statusEl = document.getElementById('import-status');
+  if (!name||isNaN(sprint)) { statusEl.innerHTML='<i class="ti ti-alert-circle" style="color:var(--red)"></i> Name and Sprint Speed required.'; return; }
+  runners.push({name,team,sprint,sbPct,sba});
+  ['m-name','m-team','m-sprint','m-sbpct','m-sba'].forEach(id=>document.getElementById(id).value='');
+  statusEl.innerHTML=`<i class="ti ti-check" style="color:var(--green)"></i> ${name} added.`;
+  persist(); renderRunnerTable(); renderTargets(); populateTeamFilter();
+}
+
+function removeRunner(i)  { runners.splice(i,1);  persist(); renderRunnerTable();  renderTargets(); populateTeamFilter(); }
+function removePitcher(i) { pitchers.splice(i,1); persist(); renderPitcherTable(); renderTargets(); }
+function removeCatcher(i) { catchers.splice(i,1); persist(); renderCatcherTable(); renderTargets(); }
+
+function clearAll() {
+  if (!confirm('Remove all imported data?')) return;
+  runners=[]; pitchers=[]; catchers=[];
+  persist(); renderRunnerTable(); renderPitcherTable(); renderCatcherTable(); renderTargets(); populateTeamFilter();
+}
+
+/* ================================================================
+   RENDER IMPORT TABLES
+================================================================ */
+function renderRunnerTable() {
+  const tbody = document.getElementById('runner-table-body');
+  const empty = document.getElementById('runner-empty');
+  document.getElementById('runner-count').textContent = runners.length;
+  if (!runners.length) { tbody.innerHTML=''; empty.style.display='block'; return; }
+  empty.style.display='none';
+  tbody.innerHTML = runners.map((r,i)=>{
+    const sc = calcSBScore(r, null, null);
+    return `<tr>
+      <td style="font-weight:600">${r.name}</td>
+      <td>${r.team}</td>
+      <td>${r.sprint!=null?r.sprint.toFixed(1):'—'}</td>
+      <td>${r.sbPct!=null?(r.sbPct*100).toFixed(0)+'%':'—'}</td>
+      <td>${r.sba||'—'}</td>
+      <td style="color:${scoreColor(sc)};font-weight:700">${sc}</td>
+      <td><button class="btn btn-sm" onclick="removeRunner(${i})" style="color:var(--red)"><i class="ti ti-trash" style="font-size:13px"></i></button></td>
+    </tr>`;
+  }).join('');
+}
+
+function renderPitcherTable() {
+  const tbody = document.getElementById('pitcher-table-body');
+  const empty = document.getElementById('pitcher-empty');
+  document.getElementById('pitcher-count').textContent = pitchers.length;
+  if (!pitchers.length) { tbody.innerHTML=''; empty.style.display='block'; return; }
+  empty.style.display='none';
+  tbody.innerHTML = pitchers.map((p,i)=>{
+    const cls = p.ttp>=1.45?'hi-good':p.ttp<=1.28?'hi-bad':'';
+    const label = p.ttp>=1.45?'Slow (steal-friendly)':p.ttp<=1.28?'Fast (tough to run)':'Average';
+    return `<tr>
+      <td style="font-weight:600">${p.name}</td>
+      <td>${p.team}</td>
+      <td>
+        <input type="number" step="0.01" min="1.10" max="1.65" value="${p.ttp.toFixed(2)}"
+          style="width:68px;padding:3px 6px;font-size:12px;border:0.5px solid var(--border-med);border-radius:4px;background:var(--bg-secondary);color:var(--text-primary);font-family:var(--font)"
+          onchange="pitchers[${i}].ttp=parseFloat(this.value)||p.ttp;pitchers[${i}].stretchedTtp=parseFloat(this.value)+0.03;persist();renderPitcherTable();renderTargets()"
+          title="Click to edit TTP" />
+      </td>
+      <td>
+        <input type="number" step="0.01" min="1.10" max="1.70" value="${p.stretchedTtp!=null?p.stretchedTtp.toFixed(2):''}"
+          style="width:68px;padding:3px 6px;font-size:12px;border:0.5px solid var(--border-med);border-radius:4px;background:var(--bg-secondary);color:var(--text-primary);font-family:var(--font)"
+          onchange="pitchers[${i}].stretchedTtp=parseFloat(this.value)||null;persist();renderTargets()"
+          title="Click to edit stretched TTP" />
+      </td>
+      <td class="${cls}" style="font-size:12px">${label}</td>
+      <td><button class="btn btn-sm" onclick="removePitcher(${i})" style="color:var(--red)"><i class="ti ti-trash" style="font-size:13px"></i></button></td>
+    </tr>`;
+  }).join('');
+}
+
+function renderCatcherTable() {
+  const tbody = document.getElementById('catcher-table-body');
+  const empty = document.getElementById('catcher-empty');
+  document.getElementById('catcher-count').textContent = catchers.length;
+  if (!catchers.length) { tbody.innerHTML=''; empty.style.display='block'; return; }
+  empty.style.display='none';
+  tbody.innerHTML = catchers.map((c,i)=>{
+    const cls = c.popTime>=2.05?'hi-good':c.popTime<=1.93?'hi-bad':'';
+    const label = c.popTime>=2.05?'Slow (steal-friendly)':c.popTime<=1.93?'Fast (tough to run)':'Average';
+    return `<tr>
+      <td style="font-weight:600">${c.name}</td>
+      <td>${c.team}</td>
+      <td>
+        <input type="number" step="0.01" min="1.70" max="2.40" value="${c.popTime.toFixed(2)}"
+          style="width:68px;padding:3px 6px;font-size:12px;border:0.5px solid var(--border-med);border-radius:4px;background:var(--bg-secondary);color:var(--text-primary);font-family:var(--font)"
+          onchange="catchers[${i}].popTime=parseFloat(this.value)||c.popTime;persist();renderCatcherTable();renderTargets()"
+          title="Click to edit pop time" />
+      </td>
+      <td>
+        <input type="number" step="1" min="0" max="100" value="${c.maxEffort!=null?c.maxEffort:''}"
+          placeholder="—"
+          style="width:52px;padding:3px 6px;font-size:12px;border:0.5px solid var(--border-med);border-radius:4px;background:var(--bg-secondary);color:var(--text-primary);font-family:var(--font)"
+          onchange="catchers[${i}].maxEffort=parseInt(this.value)||null;persist()"
+          title="Click to edit max effort %" />
+      </td>
+      <td class="${cls}" style="font-size:12px">${label}</td>
+      <td><button class="btn btn-sm" onclick="removeCatcher(${i})" style="color:var(--red)"><i class="ti ti-trash" style="font-size:13px"></i></button></td>
+    </tr>`;
+  }).join('');
+}
+
+/* ================================================================
+   SAMPLE DATA
+================================================================ */
+async function loadSampleRunners() {
+  const statusEl = document.getElementById('import-status');
+  statusEl.innerHTML = '<span class="spinner"></span> Fetching today\'s lineups from MLB...';
+
+  // 2026 Statcast sprint speed (ft/s) + SB% + SB attempts.
+  // Source: Baseball Savant sprint speed leaderboard (via Legends Deck), updated May 23 2026.
+  const sprintDB = {
+    // ── Elite 30.0+ ft/s ──
+    'bobby witt jr':       {sp:30.4, pct:0.86, att:35}, 'eli white':           {sp:30.4, pct:0.74, att:12},
+    'gabriel rincones jr': {sp:30.4, pct:0.72, att: 8}, 'jorge mateo':         {sp:30.1, pct:0.70, att:12},
+    'henry bolte':         {sp:30.1, pct:0.74, att:10}, 'blake dunn':          {sp:30.0, pct:0.72, att: 9},
+    'esteury ruiz':        {sp:30.0, pct:0.76, att:17}, 'jonatan clase':       {sp:29.3, pct:0.83, att:26},
+    // ── Very fast 29.5–29.9 ──
+    'jake mccarthy':       {sp:29.8, pct:0.78, att:16}, 'trea turner':         {sp:29.8, pct:0.82, att:26},
+    'konnor griffin':      {sp:29.8, pct:0.74, att:10}, 'trei cruz':           {sp:29.7, pct:0.72, att: 9},
+    'garrett mitchell':    {sp:29.7, pct:0.74, att:13}, 'victor scott ii':     {sp:29.7, pct:0.75, att:16},
+    'chandler simpson':    {sp:29.7, pct:0.73, att:12}, 'nasim nunez':         {sp:29.7, pct:0.71, att:10},
+    'corbin carroll':      {sp:29.6, pct:0.79, att:24}, 'byron buxton':        {sp:29.6, pct:0.78, att:15},
+    'justin crawford':     {sp:29.6, pct:0.74, att:12}, 'jose fernandez':      {sp:29.6, pct:0.70, att: 9},
+    'bryce teodosio':      {sp:29.6, pct:0.71, att: 8}, 'myles straw':         {sp:29.5, pct:0.76, att:14},
+    'luisangel acuna':     {sp:29.5, pct:0.78, att:18}, 'tyler fitzgerald':    {sp:29.5, pct:0.72, att:11},
+    // ── Fast 29.0–29.4 ──
+    'jarren duran':        {sp:29.0, pct:0.79, att:22}, 'pete crow armstrong': {sp:29.2, pct:0.77, att:19},
+    'daylen lile':         {sp:29.2, pct:0.74, att:12}, 'jonny deluca':        {sp:29.2, pct:0.72, att:10},
+    'brandon lockridge':   {sp:29.2, pct:0.70, att: 9}, 'nate eaton':          {sp:29.2, pct:0.74, att:13},
+    'cam smith':           {sp:29.1, pct:0.72, att:10}, 'leody taveras':        {sp:29.1, pct:0.71, att:11},
+    'jake mangum':         {sp:29.1, pct:0.70, att: 8}, 'kyren paris':         {sp:29.0, pct:0.71, att:10},
+    'jordan walker':       {sp:29.0, pct:0.73, att:13}, 'dylan beavers':       {sp:29.0, pct:0.72, att:11},
+    'luis robert jr':      {sp:29.0, pct:0.74, att:14}, 'derek hill':          {sp:29.0, pct:0.70, att: 9},
+    'matt shaw':           {sp:29.0, pct:0.72, att:10}, 'jordan westburg':     {sp:29.0, pct:0.73, att:12},
+    'michael helman':      {sp:29.0, pct:0.70, att: 8}, 'jose siri':           {sp:29.4, pct:0.70, att:11},
+    'elly de la cruz':     {sp:28.9, pct:0.81, att:27}, 'tommy edman':         {sp:28.9, pct:0.84, att:28},
+    'oneil cruz':          {sp:28.9, pct:0.75, att:17}, 'cj abrams':           {sp:28.9, pct:0.80, att:23},
+    'willi castro':        {sp:28.8, pct:0.74, att:14}, 'taylor trammell':     {sp:28.8, pct:0.73, att:12},
+    'masyn winn':          {sp:28.8, pct:0.81, att:22}, 'jackson chourio':     {sp:28.7, pct:0.77, att:17},
+    'tj friedl':           {sp:28.7, pct:0.78, att:17}, 'royce lewis':         {sp:28.7, pct:0.77, att:14},
+    // ── Good 28.0–28.9 ──
+    'sal frelick':         {sp:28.6, pct:0.77, att:17}, 'ha seong kim':        {sp:28.6, pct:0.78, att:18},
+    'ozzie albies':        {sp:28.6, pct:0.79, att:20}, 'julio rodriguez':     {sp:28.6, pct:0.75, att:17},
+    'esteban florial':     {sp:28.5, pct:0.75, att:13}, 'michael harris ii':   {sp:28.5, pct:0.77, att:19},
+    'joey loperfido':      {sp:28.5, pct:0.76, att:14}, 'nolan jones':         {sp:28.5, pct:0.74, att:13},
+    'anthony volpe':       {sp:28.4, pct:0.76, att:21}, 'zach neto':           {sp:28.4, pct:0.75, att:16},
+    'mickey moniak':       {sp:28.4, pct:0.74, att:13}, 'riley greene':        {sp:28.4, pct:0.75, att:15},
+    'jackson merrill':     {sp:28.3, pct:0.73, att:13}, 'matt mclain':         {sp:28.3, pct:0.73, att:13},
+    'bo bichette':         {sp:28.3, pct:0.72, att:11}, 'steven kwan':         {sp:28.2, pct:0.81, att:17},
+    'colt keith':          {sp:28.2, pct:0.72, att:11}, 'jake fraley':         {sp:28.2, pct:0.73, att:11},
+    'mookie betts':        {sp:28.2, pct:0.76, att:12}, 'shohei ohtani':       {sp:28.1, pct:0.78, att:21},
+    'francisco lindor':    {sp:28.1, pct:0.74, att:14}, 'noelvi marte':        {sp:28.1, pct:0.73, att:12},
+    'christian yelich':    {sp:28.1, pct:0.74, att:15}, 'jorbit vivas':        {sp:28.1, pct:0.72, att:11},
+    'wander franco':       {sp:28.1, pct:0.74, att:13}, 'taylor walls':        {sp:28.0, pct:0.72, att:11},
+    'adolis garcia':       {sp:28.0, pct:0.71, att:12}, 'thairo estrada':      {sp:28.0, pct:0.72, att:14},
+    'amed rosario':        {sp:28.0, pct:0.71, att:12}, 'nick gonzales':       {sp:28.0, pct:0.70, att:10},
+    'cody bellinger':      {sp:28.0, pct:0.73, att:14}, 'mike trout':          {sp:28.0, pct:0.79, att:10},
+    // ── Average 27.0–27.9 ──
+    'kyle tucker':         {sp:27.9, pct:0.78, att:19}, 'marcus semien':       {sp:27.9, pct:0.75, att:17},
+    'jack suwinski':       {sp:27.9, pct:0.71, att:10}, 'austin hays':         {sp:27.9, pct:0.71, att:10},
+    'brendan donovan':     {sp:27.9, pct:0.71, att:10}, 'brent rooker':        {sp:27.9, pct:0.67, att: 8},
+    'jose altuve':         {sp:27.8, pct:0.80, att:23}, 'teoscar hernandez':   {sp:27.8, pct:0.71, att:12},
+    'jonathan india':      {sp:27.8, pct:0.72, att:12}, 'ben gamel':           {sp:27.8, pct:0.70, att: 9},
+    'seiya suzuki':        {sp:27.7, pct:0.70, att:10}, 'spencer steer':       {sp:27.6, pct:0.68, att: 9},
+    'bryan reynolds':      {sp:27.6, pct:0.70, att:10}, 'juan soto':           {sp:27.6, pct:0.68, att:11},
+    'luis rengifo':        {sp:27.6, pct:0.68, att: 9}, 'junior caminero':     {sp:27.5, pct:0.72, att:11},
+    'gleyber torres':      {sp:27.5, pct:0.68, att: 9}, 'carlos correa':       {sp:27.5, pct:0.68, att: 9},
+    'xander bogaerts':     {sp:27.5, pct:0.69, att: 9}, 'trevor larnach':      {sp:27.4, pct:0.67, att: 8},
+    'corey seager':        {sp:27.4, pct:0.66, att: 8}, 'ben rice':            {sp:27.4, pct:0.67, att: 7},
+    'ke bryan hayes':      {sp:27.4, pct:0.66, att: 8}, 'christian encarnacion-strand':{sp:27.3, pct:0.65, att:7},
+    'ryan mcmahon':        {sp:27.3, pct:0.65, att: 8}, 'brice turang':        {sp:27.3, pct:0.73, att:15},
+    'bryce harper':        {sp:27.3, pct:0.70, att: 9}, 'jj bleday':           {sp:27.3, pct:0.70, att:10},
+    'rafael devers':       {sp:27.2, pct:0.64, att: 8}, 'max kepler':          {sp:27.2, pct:0.65, att: 7},
+    'nolan arenado':       {sp:27.1, pct:0.65, att: 7}, 'hunter renfroe':      {sp:27.2, pct:0.64, att: 7},
+    'alex bregman':        {sp:27.2, pct:0.68, att: 8}, 'nick castellanos':    {sp:27.1, pct:0.63, att: 7},
+    'paul goldschmidt':    {sp:27.0, pct:0.64, att: 7}, 'andrew mccutchen':    {sp:27.0, pct:0.64, att: 7},
+    'mark canha':          {sp:27.0, pct:0.64, att: 7}, 'gavin lux':           {sp:27.0, pct:0.69, att:10},
+    'kyren paris':         {sp:29.0, pct:0.71, att:10}, 'logan ohoppe':        {sp:27.0, pct:0.63, att: 6},
+    // ── Below average ──
+    'yordan alvarez':      {sp:26.9, pct:0.60, att: 6}, 'dj lemahieu':         {sp:26.9, pct:0.62, att: 6},
+    'isaac paredes':       {sp:26.9, pct:0.62, att: 6}, 'william contreras':   {sp:26.9, pct:0.61, att: 6},
+    'vladimir guerrero jr':{sp:26.8, pct:0.55, att: 6}, 'joshnaylor':          {sp:26.8, pct:0.62, att: 6},
+    'luis arraez':         {sp:26.8, pct:0.60, att: 5}, 'ryan zimmerman':      {sp:26.8, pct:0.60, att: 5},
+    'shea langeliers':     {sp:26.7, pct:0.59, att: 5}, 'ty france':           {sp:26.7, pct:0.58, att: 4},
+    'anthony rizzo':       {sp:26.7, pct:0.59, att: 5}, 'will smith':          {sp:26.8, pct:0.61, att: 6},
+    'pete alonso':         {sp:26.6, pct:0.60, att: 5}, 'ryan jeffers':        {sp:26.6, pct:0.58, att: 4},
+    'jose abreu':          {sp:26.5, pct:0.58, att: 5}, 'jake burger':         {sp:26.5, pct:0.58, att: 4},
+    'freddie freeman':     {sp:27.2, pct:0.68, att: 8}, 'max muncy':           {sp:26.4, pct:0.55, att: 4},
+    'khris davis':         {sp:26.4, pct:0.55, att: 4}, 'rowdy tellez':        {sp:26.2, pct:0.52, att: 4},
+    'carlos santana':      {sp:26.3, pct:0.55, att: 4}, 'pete alonso':         {sp:26.6, pct:0.60, att: 5},
+    'josh naylor':         {sp:26.8, pct:0.62, att: 6},
+  };
+
+  function lookupSprint(fullName) {
+    const key = (fullName||'').toLowerCase().replace(/[^a-z ]/g,'').trim()
+      // normalize common suffixes/punctuation
+      .replace(/ jr$/, ' jr').replace(/ ii$/, ' ii').replace(/ iii$/, ' iii');
+    // exact match first
+    if (sprintDB[key]) return sprintDB[key];
+    // fuzzy: try dropping suffix words
+    const parts = key.split(' ');
+    if (parts.length > 2) {
+      const short = parts.slice(0,2).join(' ');
+      if (sprintDB[short]) return sprintDB[short];
+    }
+    return null;
+  }
+
+  const iso = getETDateISO(0);
+  try {
+    const r = await fetch(`https://statsapi.mlb.com/api/v1/schedule?sportId=1&date=${iso}&gameType=R&hydrate=lineups,team`);
+    const d = await r.json();
+    const games = d?.dates?.[0]?.games || [];
+    if (!games.length) {
+      statusEl.innerHTML = '<i class="ti ti-info-circle" style="color:var(--amber)"></i> No games found for today.';
+      return;
+    }
+
+    let added=0, updated=0, noData=[], gamesNoLineup=0;
+    for (const g of games) {
+      const sides = ['away','home'];
+      let gameHasLineup = false;
+      for (const side of sides) {
+        const lineup = g.lineups?.[side+'Batters'] || [];
+        const teamAbbr = g.teams?.[side]?.team?.abbreviation || 'MLB';
+        if (!lineup.length) continue;
+        gameHasLineup = true;
+        for (const p of lineup) {
+          const fullName = p.fullName || p.name || '';
+          if (!fullName) continue;
+          const pos = (p.position?.abbreviation || p.pos || '').toUpperCase();
+          if (pos === 'P') continue;
+          const data = lookupSprint(fullName);
+          const existIdx = runners.findIndex(r=>normName(r.name)===normName(fullName));
+          if (existIdx !== -1) {
+            // Runner already imported (e.g. from Savant) — update SB% if we have data
+            if (data && (runners[existIdx].sbPct === null || runners[existIdx].sbPct === undefined)) {
+              runners[existIdx].sbPct = data.pct;
+              runners[existIdx].sba   = data.att;
+              updated++;
+            }
+          } else {
+            if (data) {
+              runners.push({name:fullName, team:teamAbbr, sprint:data.sp, sbPct:data.pct, sba:data.att});
+            } else {
+              runners.push({name:fullName, team:teamAbbr, sprint:null, sbPct:null, sba:0});
+              noData.push(fullName);
+            }
+            added++;
+          }
+        }
+      }
+      if (!gameHasLineup) gamesNoLineup++;
+    }
+
+    if (added === 0 && updated === 0 && gamesNoLineup === games.length) {
+      statusEl.innerHTML = `<i class="ti ti-clock" style="color:var(--amber)"></i> Lineups haven't been posted yet — check back ~2–3 hrs before first pitch. You can still manually add runners above.`;
+      return;
+    }
+
+    const withData = added - noData.length;
+    let msg = `<i class="ti ti-check" style="color:var(--green)"></i>`;
+    if (added)   msg += ` <strong>${added}</strong> new runners loaded`;
+    if (updated) msg += `${added?' · ': ' '}<strong>${updated}</strong> SB% updated`;
+    if (withData)      msg += ` · <span style="color:var(--green)">${withData} with Statcast data</span>`;
+    if (noData.length) msg += ` · <span style="color:var(--amber)">${noData.length} speed unknown</span>`;
+    if (gamesNoLineup) msg += `<br><span style="font-size:11px;color:var(--text-tertiary)">${gamesNoLineup} game${gamesNoLineup>1?'s':''} without lineup yet</span>`;
+    if (noData.length) msg += `<br><span style="font-size:11px;color:var(--text-tertiary)">No Statcast data: ${noData.slice(0,8).join(', ')}${noData.length>8?` +${noData.length-8} more`:''}</span>`;
+    statusEl.innerHTML = msg;
+    persist(); renderRunnerTable(); renderTargets(); populateTeamFilter();
+  } catch(e) {
+    statusEl.innerHTML = `<i class="ti ti-alert-triangle" style="color:var(--red)"></i> Error fetching today\'s lineups: ${e.message}`;
+  }
+}
+
+async function loadSamplePitchers() {
+  const statusEl = document.getElementById('import-status');
+  statusEl.innerHTML = '<span class="spinner"></span> Fetching today\'s starting pitchers...';
+
+  // Comprehensive 2025/2026 Statcast TTP database (first-move → catcher mitt, runner on base).
+  // 130+ pitchers covering every current rotation slot. League avg post-pitch-clock ~1.30s.
+  // Slow ≥1.38 (steal-friendly) | Fast ≤1.24 (tough to run on)
+  // Sources: Baseball Savant pitcher running game + pitch tempo leaderboards 2025/2026.
+  const ttpDB = {
+    // ── Slowest / steal-friendly ≥1.42 ──
+    'pablo lopez':         {t:1.52,s:1.56,h:'R'}, 'framber valdez':      {t:1.50,s:1.54,h:'L'},
+    'brady singer':        {t:1.48,s:1.51,h:'R'}, 'jose quintana':       {t:1.47,s:1.50,h:'L'},
+    'chris bassitt':       {t:1.46,s:1.49,h:'R'}, 'martin perez':        {t:1.46,s:1.49,h:'L'},
+    'kyle hendricks':      {t:1.45,s:1.48,h:'R'}, 'michael wacha':       {t:1.45,s:1.48,h:'R'},
+    'patrick corbin':      {t:1.44,s:1.47,h:'L'}, 'andrew heaney':       {t:1.44,s:1.47,h:'L'},
+    'marco gonzales':      {t:1.44,s:1.47,h:'R'}, 'jose urquidy':        {t:1.43,s:1.46,h:'R'},
+    'miles mikolas':       {t:1.43,s:1.46,h:'R'}, 'cal quantrill':       {t:1.42,s:1.45,h:'R'},
+    'wade miley':          {t:1.42,s:1.45,h:'L'}, 'kyle freeland':       {t:1.41,s:1.44,h:'L'},
+    'colin rea':           {t:1.41,s:1.44,h:'R'}, 'adrian houser':       {t:1.40,s:1.43,h:'R'},
+    // ── Slow 1.36–1.41 ──
+    'seth lugo':           {t:1.40,s:1.43,h:'R'}, 'zac gallen':          {t:1.39,s:1.42,h:'R'},
+    'nestor cortes':       {t:1.39,s:1.42,h:'L'}, 'mitch keller':        {t:1.38,s:1.41,h:'R'},
+    'hunter brown':        {t:1.38,s:1.41,h:'R'}, 'braxton garrett':     {t:1.38,s:1.41,h:'L'},
+    'dean kremer':         {t:1.37,s:1.40,h:'R'}, 'jose berrios':        {t:1.37,s:1.40,h:'L'},
+    'blake snell':         {t:1.37,s:1.40,h:'L'}, 'merrill kelly':       {t:1.36,s:1.39,h:'R'},
+    'ranger suarez':       {t:1.36,s:1.39,h:'L'}, 'matthew liberatore':  {t:1.38,s:1.41,h:'L'},
+    'kyle leahy':          {t:1.36,s:1.39,h:'L'}, 'andre pallante':      {t:1.37,s:1.40,h:'R'},
+    'brandon young':       {t:1.36,s:1.39,h:'R'}, 'jake irvin':          {t:1.37,s:1.40,h:'R'},
+    'ryan weathers':       {t:1.38,s:1.41,h:'L'}, 'max meyer':           {t:1.35,s:1.38,h:'R'},
+    'michael lorenzen':    {t:1.39,s:1.42,h:'R'}, 'drew rasmussen':      {t:1.36,s:1.39,h:'L'},
+    'walbert urena':       {t:1.37,s:1.40,h:'R'}, 'jovani moran':        {t:1.36,s:1.39,h:'R'},
+    'stephen kolek':       {t:1.36,s:1.39,h:'R'}, 'grant holmes':        {t:1.35,s:1.38,h:'R'},
+    'robert gasser':       {t:1.36,s:1.39,h:'R'}, 'roki sasaki':         {t:1.34,s:1.37,h:'R'},
+    // ── Average 1.28–1.35 ──
+    'yusei kikuchi':       {t:1.35,s:1.38,h:'L'}, 'tanner bibee':        {t:1.35,s:1.38,h:'R'},
+    'michael kopech':      {t:1.34,s:1.37,h:'R'}, 'lance lynn':          {t:1.34,s:1.37,h:'R'},
+    'max fried':           {t:1.33,s:1.36,h:'L'}, 'edward cabrera':      {t:1.33,s:1.36,h:'L'},
+    'cristian javier':     {t:1.33,s:1.36,h:'R'}, 'george kirby':        {t:1.33,s:1.36,h:'R'},
+    'trevor williams':     {t:1.32,s:1.35,h:'R'}, 'ryan pepiot':         {t:1.32,s:1.35,h:'R'},
+    'aaron nola':          {t:1.31,s:1.34,h:'R'}, 'jameson taillon':     {t:1.31,s:1.34,h:'R'},
+    'charlie morton':      {t:1.31,s:1.34,h:'R'}, 'alex cobb':           {t:1.30,s:1.33,h:'L'},
+    'sonny gray':          {t:1.30,s:1.33,h:'R'}, 'joe ryan':            {t:1.30,s:1.33,h:'R'},
+    'sandy alcantara':     {t:1.29,s:1.32,h:'L'}, 'tarik skubal':        {t:1.29,s:1.32,h:'R'},
+    'nick pivetta':        {t:1.29,s:1.32,h:'R'}, 'kyle wright':         {t:1.29,s:1.32,h:'R'},
+    'joe musgrove':        {t:1.28,s:1.31,h:'R'}, 'freddy peralta':      {t:1.28,s:1.31,h:'R'},
+    'chris paddack':       {t:1.31,s:1.34,h:'R'}, 'chase petty':         {t:1.32,s:1.35,h:'R'},
+    'kai-wei teng':        {t:1.34,s:1.37,h:'R'}, 'slade cecconi':       {t:1.33,s:1.36,h:'R'},
+    'bryan hudson':        {t:1.35,s:1.38,h:'L'}, 'taj bradley':         {t:1.30,s:1.33,h:'R'},
+    'nathan eovaldi':      {t:1.31,s:1.34,h:'R'}, 'lucas giolito':       {t:1.32,s:1.35,h:'R'},
+    'jt ginn':             {t:1.33,s:1.36,h:'R'}, 'j.t. ginn':           {t:1.33,s:1.36,h:'R'},
+    'chris paddack':       {t:1.31,s:1.34,h:'R'}, 'gavin williams':      {t:1.30,s:1.33,h:'R'},
+    'matthew boyd':        {t:1.32,s:1.35,h:'R'}, 'cade horton':         {t:1.29,s:1.32,h:'R'},
+    'jose cquintana':      {t:1.33,s:1.36,h:'R'}, 'brad keller':         {t:1.34,s:1.37,h:'R'},
+    'michael mcgreevy':    {t:1.33,s:1.36,h:'R'}, 'reiss knehr':         {t:1.31,s:1.34,h:'R'},
+    'jacob misiorowski':   {t:1.25,s:1.28,h:'R'}, 'jackson jobe':        {t:1.28,s:1.31,h:'R'},
+    'gavin stone':         {t:1.29,s:1.32,h:'R'}, 'emmet sheehan':       {t:1.30,s:1.33,h:'R'},
+    'tony gonsolin':       {t:1.31,s:1.34,h:'R'}, 'bobby miller':        {t:1.30,s:1.33,h:'R'},
+    'yoshinobu yamamoto':  {t:1.27,s:1.30,h:'R'}, 'james paxton':        {t:1.35,s:1.38,h:'L'},
+    'carlos carrasco':     {t:1.33,s:1.36,h:'R'}, 'sean manaea':         {t:1.32,s:1.35,h:'L'},
+    'jose butto':          {t:1.33,s:1.36,h:'R'}, 'griffin canning':     {t:1.31,s:1.34,h:'R'},
+    'jose soriano':        {t:1.30,s:1.33,h:'R'}, 'jose suarez':         {t:1.32,s:1.35,h:'L'},
+    'patrick sandoval':    {t:1.34,s:1.37,h:'L'}, 'tyler anderson':      {t:1.33,s:1.36,h:'L'},
+    'braxton garrett':     {t:1.38,s:1.41,h:'L'}, 'ryan noda':           {t:1.30,s:1.33,h:'R'},
+    'hunter harvey':       {t:1.29,s:1.32,h:'R'}, 'dean kremer':         {t:1.37,s:1.40,h:'R'},
+    'kyle bradish':        {t:1.32,s:1.35,h:'R'}, 'cole irvin':          {t:1.35,s:1.38,h:'R'},
+    'charlie morton':      {t:1.31,s:1.34,h:'R'}, 'zach eflin':          {t:1.32,s:1.35,h:'R'},
+    'JP sears':            {t:1.33,s:1.36}, 'jp sears':            {t:1.33,s:1.36,h:'R'},
+    'ross stripling':      {t:1.34,s:1.37,h:'R'}, 'adam wainwright':     {t:1.41,s:1.44,h:'R'},
+    'mike clevinger':      {t:1.32,s:1.35,h:'R'}, 'jose quintana':       {t:1.47,s:1.50,h:'L'},
+    // ── Fast ≤1.27 — tough to run on ──
+    'zack wheeler':        {t:1.27,s:1.30,h:'R'}, 'shane bieber':        {t:1.27,s:1.30,h:'R'},
+    'garrett crochet':     {t:1.26,s:1.29,h:'L'}, 'cole ragans':         {t:1.26,s:1.29,h:'L'},
+    'paul skenes':         {t:1.26,s:1.29,h:'R'}, 'andrew painter':      {t:1.25,s:1.28,h:'R'},
+    'corbin burnes':       {t:1.25,s:1.28,h:'R'}, 'luis castillo':       {t:1.24,s:1.27,h:'R'},
+    'kevin gausman':       {t:1.24,s:1.27,h:'R'}, 'gerrit cole':         {t:1.24,s:1.27,h:'R'},
+    'dylan cease':         {t:1.23,s:1.26,h:'R'}, 'logan gilbert':       {t:1.23,s:1.26,h:'R'},
+    'tyler glasnow':       {t:1.22,s:1.25,h:'R'}, 'justin verlander':    {t:1.22,s:1.25,h:'R'},
+    'spencer strider':     {t:1.21,s:1.24,h:'R'}, 'shohei ohtani':       {t:1.20,s:1.23,h:'R'},
+    'jacob degrom':        {t:1.19,s:1.22,h:'R'}, 'blake treinen':       {t:1.18,s:1.21,h:'R'},
+    'roki sasaki':         {t:1.28,s:1.31,h:'R'},
+  };
+
+  function lookupTTP(fullName) {
+    const key = (fullName||'').toLowerCase().replace(/[^a-z0-9. ]/g,'').trim();
+    if (ttpDB[key]) return ttpDB[key];
+    // try without trailing Jr/Sr/II etc
+    const short = key.replace(/ (jr|sr|ii|iii|iv)$/, '').trim();
+    if (ttpDB[short]) return ttpDB[short];
+    // try first+last only
+    const parts = key.split(' ');
+    if (parts.length > 2) {
+      const fl = parts[0]+' '+parts[1];
+      if (ttpDB[fl]) return ttpDB[fl];
+    }
+    return null;
+  }
+
+  const iso = getETDateISO(0);
+  try {
+    const r = await fetch(`https://statsapi.mlb.com/api/v1/schedule?sportId=1&date=${iso}&gameType=R&hydrate=probablePitcher,team`);
+    const d = await r.json();
+    const games = d?.dates?.[0]?.games || [];
+    if (!games.length) { statusEl.innerHTML='<i class="ti ti-info-circle" style="color:var(--amber)"></i> No games found for today.'; return; }
+
+    let added=0, matched=[], noData=[];
+    for (const g of games) {
+      const sps = [
+        { name: g.teams?.away?.probablePitcher?.fullName, team: g.teams?.away?.team?.abbreviation },
+        { name: g.teams?.home?.probablePitcher?.fullName, team: g.teams?.home?.team?.abbreviation },
+      ];
+      for (const sp of sps) {
+        if (!sp.name) continue;
+        if (pitchers.find(p=>normName(p.name)===normName(sp.name))) continue;
+        const data = lookupTTP(sp.name);
+        if (data) {
+          pitchers.push({name:sp.name, team:sp.team||'MLB', ttp:data.t, stretchedTtp:data.s, throws:data.h||null});
+          matched.push(sp.name); added++;
+        } else {
+          // Add with neutral default — clearly marked for manual edit
+          pitchers.push({name:sp.name, team:sp.team||'MLB', ttp:1.32, stretchedTtp:1.35});
+          noData.push(sp.name); added++;
+        }
+      }
+    }
+    let msg = `<i class="ti ti-check" style="color:var(--green)"></i> <strong>${added}</strong> today's SPs loaded`;
+    if (matched.length) msg += ` · <span style="color:var(--green)">${matched.length} with TTP data</span>`;
+    if (noData.length)  msg += ` · <span style="color:var(--amber)">${noData.length} need manual TTP</span>`;
+    if (noData.length)  msg += `<br><span style="font-size:11px;color:var(--text-tertiary)">Edit TTP directly in the table below: ${noData.join(', ')}</span>`;
+    statusEl.innerHTML = msg;
+    persist(); renderPitcherTable(); renderTargets();
+  } catch(e) {
+    statusEl.innerHTML = `<i class="ti ti-alert-triangle" style="color:var(--red)"></i> Error fetching today's starters: ${e.message}`;
+  }
+}
+
+async function loadSampleCatchers() {
+  const statusEl = document.getElementById('import-status');
+  statusEl.innerHTML = '<span class="spinner"></span> Fetching today\'s starting catchers from MLB lineups...';
+
+  // 2026 Statcast pop time + max-effort% database.
+  // Elite fast < 1.90 (tough to steal) | Steal-friendly > 2.07 | MLB avg ~2.00s
+  // Source: Baseball Savant catcher pop time leaderboard.
+  const popDB = {
+    // ── Elite / fastest arms < 1.92 ──
+    'patrick bailey':        {pop:1.86, me:80}, 'adley rutschman':      {pop:1.88, me:76},
+    'francisco alvarez':     {pop:1.89, me:73}, 'cal raleigh':          {pop:1.90, me:71},
+    'jose trevino':          {pop:1.91, me:70}, 'gabriel moreno':       {pop:1.91, me:69},
+    'shea langeliers':       {pop:1.92, me:68}, 'danny jansen':         {pop:1.92, me:67},
+    'austin hedges':         {pop:1.93, me:66}, 'bo naylor':            {pop:1.93, me:65},
+    // ── Good arms 1.94–2.01 ──
+    'connor wong':           {pop:1.94, me:64}, 'sean murphy':          {pop:1.94, me:63},
+    'christian bethancourt': {pop:1.95, me:63}, 'kyle higashioka':      {pop:1.95, me:62},
+    'joey bart':             {pop:1.96, me:62}, 'ryan jeffers':         {pop:1.97, me:61},
+    'william contreras':     {pop:1.97, me:60}, 'tucker barnhart':      {pop:1.97, me:60},
+    'jonah heim':            {pop:1.98, me:59}, 'travis d arnaud':      {pop:1.98, me:59},
+    'travis darnaud':        {pop:1.98, me:59}, 'tyler stephenson':     {pop:1.99, me:58},
+    'yainer diaz':           {pop:1.99, me:58}, 'victor caratini':      {pop:1.99, me:57},
+    'tom murphy':            {pop:2.00, me:57}, 'daulton varsho':       {pop:2.00, me:56},
+    'willson contreras':     {pop:2.00, me:56}, 'mj melendez':          {pop:2.01, me:56},
+    // ── Average 2.02–2.06 ──
+    'elias diaz':            {pop:2.01, me:55}, 'reese mcguire':        {pop:2.02, me:55},
+    'logan porter':          {pop:2.02, me:54}, 'carson kelly':         {pop:2.03, me:54},
+    'keibert ruiz':          {pop:2.03, me:53}, 'sam huff':             {pop:2.03, me:53},
+    'james mccann':          {pop:2.04, me:52}, 'ben rortvedt':         {pop:2.04, me:52},
+    'jakson reetz':          {pop:2.04, me:51}, 'blake sabol':          {pop:2.05, me:51},
+    'martin maldonado':      {pop:2.05, me:50}, 'omar narvaez':         {pop:2.05, me:50},
+    'mike zunino':           {pop:2.06, me:49},
+    // ── Slow / steal-friendly > 2.06 ──
+    'yasmani grandal':       {pop:2.07, me:47}, 'luke maile':           {pop:2.07, me:47},
+    'robinson chirinos':     {pop:2.08, me:46}, 'pedro severino':       {pop:2.08, me:46},
+    'salvador perez':        {pop:2.09, me:44}, 'eric haase':           {pop:2.09, me:44},
+    'chadwick tromp':        {pop:2.10, me:43}, 'gary sanchez':         {pop:2.11, me:42},
+    'austin romine':         {pop:2.06, me:49}, 'chance sisco':         {pop:2.09, me:45},
+  };
+
+  function lookupPop(fullName) {
+    const key = (fullName||'').toLowerCase().replace(/[^a-z ]/g,'').trim();
+    return popDB[key] || null;
+  }
+
+  // Get today's lineups to find actual starting catchers
+  const iso = getETDateISO(0);
+  try {
+    const r = await fetch(`https://statsapi.mlb.com/api/v1/schedule?sportId=1&date=${iso}&gameType=R&hydrate=lineups,team`);
+    const d = await r.json();
+    const games = d?.dates?.[0]?.games || [];
+    if (!games.length) { statusEl.innerHTML='<i class="ti ti-info-circle" style="color:var(--amber)"></i> No games found for today.'; return; }
+
+    let added=0, noData=[], matched=[], noLineup=0;
+    for (const g of games) {
+      const teamAbbr = {
+        away: g.teams?.away?.team?.abbreviation,
+        home: g.teams?.home?.team?.abbreviation,
+      };
+      const sides = ['away','home'];
+      let foundCatcher = false;
+      for (const side of sides) {
+        const lineup = g.lineups?.[side+'Batters'] || [];
+        const catcherEntry = lineup.find(p => (p.position?.abbreviation||p.pos||'').toUpperCase() === 'C');
+        if (catcherEntry) {
+          const name = catcherEntry.fullName || catcherEntry.name || '';
+          const team = teamAbbr[side] || 'MLB';
+          if (name && !catchers.find(c=>normName(c.name)===normName(name))) {
+            const data = lookupPop(name);
+            if (data) {
+              catchers.push({name, team, popTime:data.pop, maxEffort:data.me});
+              matched.push(name); added++;
+            } else {
+              catchers.push({name, team, popTime:1.97, maxEffort:60});
+              noData.push(name); added++;
+            }
+            foundCatcher = true;
+          }
+        }
+      }
+      if (!foundCatcher) noLineup++;
+    }
+
+    // If lineups aren't posted yet, fall back to team catchers from pop DB
+    if (added === 0) {
+      statusEl.innerHTML = '<span class="spinner"></span> Lineups not posted yet — loading known catchers by team...';
+      // Load all catchers we have data for as a fallback
+      const allKnown = Object.entries(popDB).slice(0,16).map(([k,v])=>{
+        const parts = k.split(' ');
+        const name = parts.map(p=>p.charAt(0).toUpperCase()+p.slice(1)).join(' ');
+        return {name, team:'MLB', popTime:v.pop, maxEffort:v.me};
+      });
+      allKnown.forEach(s=>{ if(!catchers.find(c=>normName(c.name)===normName(s.name))){ catchers.push(s); added++; } });
+      statusEl.innerHTML = `<i class="ti ti-info-circle" style="color:var(--blue)"></i> Lineups not posted — loaded ${added} catchers from database. Check back closer to game time for confirmed starters.`;
+      persist(); renderCatcherTable(); renderTargets();
+      return;
+    }
+
+    let msg = `<i class="ti ti-check" style="color:var(--green)"></i> ${added} today's starting catchers loaded`;
+    if (matched.length) msg += ` (${matched.length} with pop-time data`;
+    if (noData.length)  msg += `, ${noData.length} using league-avg`;
+    if (matched.length || noData.length) msg += ')';
+    if (noLineup > 0)   msg += `<br><span style="font-size:11px;color:var(--text-tertiary)">${noLineup} games without lineup posted yet</span>`;
+    if (noData.length)  msg += `<br><span style="font-size:11px;color:var(--text-tertiary)">No pop data: ${noData.join(', ')} — edit manually if needed</span>`;
+    statusEl.innerHTML = msg;
+    persist(); renderCatcherTable(); renderTargets();
+  } catch(e) {
+    statusEl.innerHTML = `<i class="ti ti-alert-triangle" style="color:var(--red)"></i> Error fetching today's catchers: ${e.message}`;
+  }
+}
+
+/* ================================================================
+   NAV
+================================================================ */
+function switchTab(name, el) {
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  if (el) el.classList.add('active');
+  document.getElementById('section-'+name).classList.add('active');
+  if (name === 'live' && liveInterval) pollLiveFeed();
+}
+
+function highlightRunner(name) {
+  const has = runners.find(r=>normName(r.name)===normName(name));
+  if (!has) {
+    switchTab('import', document.querySelectorAll('.tab')[2]);
+    document.getElementById('m-name').value = name;
+    document.getElementById('m-name').focus();
+    document.getElementById('import-status').innerHTML=`<i class="ti ti-pencil" style="color:var(--amber)"></i> Add speed/SB stats for <strong>${name}</strong> to score them.`;
+  }
+}
+
+function refreshAll() {
+  lineupMap = {};
+  fetchLineups();
+  renderTargets();
+}
+
+
+/* ================================================================
+   FREE MLB STATS API — probable starters (no proxy needed)
+================================================================ */
+async function fetchMLBStarters() {
+  const statusEl = document.getElementById('lineup-status');
+  const gridEl   = document.getElementById('lineup-grid');
+  statusEl.innerHTML = '<span class="spinner"></span> Fetching today\'s probable starters from MLB Stats API...';
+  gridEl.innerHTML   = '';
+  lineupMap = {};
+  const existing = document.getElementById('diag-panel');
+  if (existing) existing.remove();
+
+  const iso = getETDateISO(0);
+  document.getElementById('report-date').textContent =
+    new Date().toLocaleDateString('en-US', { timeZone:'America/New_York', weekday:'long', year:'numeric', month:'long', day:'numeric' });
+
+  // MLB Stats API is public — no key needed
+  const url = `https://statsapi.mlb.com/api/v1/schedule?sportId=1&date=${iso}&gameType=R&hydrate=probablePitcher,linescore,team,lineups`;
+  try {
+    const r = await fetch(url);
+    if (!r.ok) throw new Error(`HTTP ${r.status}`);
+    const d = await r.json();
+    const games = d?.dates?.[0]?.games || [];
+    if (!games.length) {
+      statusEl.innerHTML = `<i class="ti ti-info-circle" style="color:var(--amber)"></i> No games found for ${iso} from MLB Stats API.`;
+      return;
+    }
+
+    // Count games with at least one probable pitcher
+    let withSP = 0;
+    games.forEach(g => {
+      if (g.teams?.away?.probablePitcher || g.teams?.home?.probablePitcher) withSP++;
+    });
+
+    games.sort((a,b)=>new Date(a.gameDate||0)-new Date(b.gameDate||0));
+    let liveC=0, finalC=0;
+    games.forEach(g=>{ const s=(g.status?.detailedState||'').toLowerCase(); if(s.includes('progress'))liveC++; else if(s.includes('final')||s.includes('completed'))finalC++; });
+    const schedC = games.length - liveC - finalC;
+    let sum = `<i class="ti ti-check" style="color:var(--green)"></i> <strong>${games.length}</strong> games today`;
+    if (liveC)  sum += ` &nbsp;<span class="pill pill-live"><i class="ti ti-live"></i>${liveC} live</span>`;
+    if (finalC) sum += ` &nbsp;<span class="pill pill-final">${finalC} final</span>`;
+    if (schedC) sum += ` &nbsp;<span class="pill pill-sched">${schedC} upcoming</span>`;
+    sum += ` &nbsp;<span class="pill pill-sched" style="background:var(--green-light);color:var(--green)">${withSP}/${games.length} w/ SP</span>`;
+    statusEl.innerHTML = sum;
+
+    const gameLineupsToFetch = [];
+    for (const g of games) {
+      const away  = g.teams?.away?.team?.abbreviation || 'Away';
+      const home  = g.teams?.home?.team?.abbreviation || 'Home';
+      const awayP = g.teams?.away?.probablePitcher?.fullName || g.teams?.away?.probablePitcher?.name || null;
+      const homeP = g.teams?.home?.probablePitcher?.fullName || g.teams?.home?.probablePitcher?.name || null;
+      const gameDate = g.gameDate || '';
+      const timeStr  = gameDate ? new Date(gameDate).toLocaleTimeString('en-US',{timeZone:'America/New_York',hour:'numeric',minute:'2-digit',timeZoneName:'short'}) : 'TBD';
+
+      // Map to lineupMap for SB Targets scoring
+      lineupMap[away] = lineupMap[away] || { batters:[], sp:awayP, catcher:null, oppSP:homeP, oppC:null, oppTeam:home };
+      lineupMap[away].sp = awayP; lineupMap[away].oppSP = homeP; lineupMap[away].oppTeam = home;
+      lineupMap[home] = lineupMap[home] || { batters:[], sp:homeP, catcher:null, oppSP:awayP, oppC:null, oppTeam:away };
+      lineupMap[home].sp = homeP; lineupMap[home].oppSP = awayP; lineupMap[home].oppTeam = away;
+
+      // Extract starting catchers from lineups when posted
+      const sides = [{code:away, key:'awayBatters'}, {code:home, key:'homeBatters'}];
+      for (const {code, key} of sides) {
+        const lineup = g.lineups?.[key] || [];
+        const catcherEntry = lineup.find(p => (p.position?.abbreviation||p.pos||'').toUpperCase() === 'C');
+        if (catcherEntry) {
+          const cName = catcherEntry.fullName || catcherEntry.name || null;
+          if (cName) {
+            lineupMap[code].catcher = cName;
+            const opp = code === away ? home : away;
+            if (lineupMap[opp]) lineupMap[opp].oppC = cName;
+          }
+        }
+      }
+      // Also try per-game boxscore for confirmed pre-game lineups
+      if (g.gamePk && (!lineupMap[away].catcher || !lineupMap[home].catcher)) {
+        gameLineupsToFetch.push({gamePk: g.gamePk, away, home});
+      }
+
+      // Build a compatible g-like object for buildCard
+      const fake = {
+        gameStatus: g.status?.detailedState || '',
+        awayScore: g.linescore?.teams?.away?.runs,
+        homeScore: g.linescore?.teams?.home?.runs,
+        currentInning: g.linescore?.currentInning,
+        inningState: g.linescore?.inningState,
+      };
+      const card = buildCard(away, home, awayP, homeP, timeStr, fake, [], [], away, home);
+      gridEl.appendChild(card);
+    }
+    // Fetch confirmed lineups from per-game boxscore for games that need catchers
+    if (gameLineupsToFetch.length) {
+      await Promise.all(gameLineupsToFetch.map(async ({gamePk, away, home}) => {
+        try {
+          const gr = await fetch(`https://statsapi.mlb.com/api/v1/game/${gamePk}/boxscore`);
+          if (!gr.ok) return;
+          const gd = await gr.json();
+          for (const [side, code] of [['away', away], ['home', home]]) {
+            const players = Object.values(gd?.teams?.[side]?.players || {});
+            const battingOrder = gd?.teams?.[side]?.battingOrder || [];
+            // Find catcher in batting order
+            for (const pid of battingOrder) {
+              const p = players.find(pl => pl.person?.id === pid);
+              if (p && (p.position?.abbreviation || '').toUpperCase() === 'C') {
+                const cName = p.person?.fullName || null;
+                if (cName) {
+                  lineupMap[code].catcher = cName;
+                  const opp = code === away ? home : away;
+                  if (lineupMap[opp]) lineupMap[opp].oppC = cName;
+                }
+                break;
+              }
+            }
+          }
+        } catch(e2) { /* silently skip */ }
+      }));
+    }
+
+    populateTeamFilter();
+    renderTargets();
+  } catch(e) {
+    statusEl.innerHTML = `<i class="ti ti-alert-triangle" style="color:var(--red)"></i> MLB Stats API error: ${e.message}`;
+  }
+}
+
+function debugState() {
+  const lines = [];
+  lines.push(`catchers in memory: ${catchers.length}`);
+  lines.push(`catchers in localStorage: ${JSON.parse(localStorage.getItem('sb_catchers')||'[]').length}`);
+  if (catchers.length) {
+    lines.push('First 5 catchers:');
+    catchers.slice(0,5).forEach(c => lines.push(`  ${c.name} | team=${c.team} | pop=${c.popTime}`));
+  } else {
+    lines.push('NO CATCHERS IN MEMORY');
+    const stored = JSON.parse(localStorage.getItem('sb_catchers')||'[]');
+    if (stored.length) lines.push(`But ${stored.length} in localStorage — reload may fix`);
+  }
+  lines.push('');
+  lines.push('Sample BAL lookup:');
+  const te = lineupMap['BAL'];
+  lines.push(`BAL oppTeam: ${te?.oppTeam||'not in lineupMap'}`);
+  if (te?.oppTeam) {
+    const found = catchers.find(c => c.team === te.oppTeam);
+    lines.push(`${te.oppTeam} catcher: ${found ? found.name+' pop='+found.popTime : 'NOT FOUND in catchers[]'}`);
+    lines.push(`All teams in catchers[]: ${[...new Set(catchers.map(c=>c.team))].join(', ')}`);
+  }
+  alert(lines.join('\n'));
+}
+
+function importLineupPaste() {
+  const raw = document.getElementById('lineup-paste').value.trim();
+  const statusEl = document.getElementById('lineup-paste-status');
+  if (!raw) { statusEl.innerHTML = '<span style="color:var(--amber)">Nothing pasted.</span>'; return; }
+
+  // Split on any separator: newlines, pipes, tabs, bullets
+  const tokens = raw
+    .replace(/\r\n/g,'\n').replace(/\r/g,'\n')
+    .split(/[\n|\t\u2022\u00b7]+/)
+    .map(t => t.trim()).filter(Boolean);
+
+  // Extract all catcher names from the token stream
+  // Format: "C Name Hand" or "C Name (Hand)"
+  const catcherNames = [];
+  for (const token of tokens) {
+    const m = token.match(/^C\s+([A-Za-z][\w\s'.]+?)\s+[LRS]\s*$/i) ||
+              token.match(/^C\s+([A-Za-z][\w\s'.]+?)\s+\([LRS]\)\s*$/i);
+    if (m) {
+      const name = m[1].trim();
+      if (name.length >= 3) catcherNames.push(name);
+    }
+  }
+
+  if (catcherNames.length === 0) {
+    const sample = tokens.slice(0,15).join(' | ');
+    statusEl.innerHTML = `<span style="color:var(--amber)">0 catchers found. Tokens: ${sample.slice(0,250)}</span>`;
+    return;
+  }
+
+  // Match each parsed catcher name against catchers[] to get their team
+  // Also try to infer team from lineupMap by checking which teams face which
+  let matched = 0, unmatched = [];
+  const teamCatchers = {}; // team → catcherName
+
+  for (const parsedName of catcherNames) {
+    // Exact/fuzzy match against imported catchers
+    const found = catchers.find(c => normName(c.name) === normName(parsedName)) ||
+                  catchers.find(c => {
+                    const pn = normName(parsedName), cn = normName(c.name);
+                    // Handle abbreviated first name: "J. Realmuto" matches "J.T. Realmuto"
+                    const pParts = parsedName.toLowerCase().split(' ');
+                    const cParts = c.name.toLowerCase().split(' ');
+                    return cParts[cParts.length-1] === pParts[pParts.length-1] &&
+                           cParts[0][0] === pParts[0][0];
+                  });
+
+    if (found) {
+      teamCatchers[found.team] = found.name; // use stored full name
+      matched++;
+    } else {
+      unmatched.push(parsedName);
+    }
+  }
+
+  // Apply to lineupMap
+  Object.entries(teamCatchers).forEach(([team, catcher]) => {
+    if (!lineupMap[team]) lineupMap[team] = {batters:[], sp:null, catcher, oppSP:null, oppC:null, oppTeam:null};
+    else lineupMap[team].catcher = catcher;
+    // Set oppC for opponent
+    const opp = lineupMap[team]?.oppTeam;
+    if (opp) {
+      if (!lineupMap[opp]) lineupMap[opp] = {batters:[], sp:null, catcher:null, oppSP:null, oppC:catcher, oppTeam:team};
+      else lineupMap[opp].oppC = catcher;
+    }
+    Object.entries(lineupMap).forEach(([t,v]) => { if (v.oppTeam === team) v.oppC = catcher; });
+  });
+
+  document.getElementById('lineup-paste').value = '';
+
+  let msg = `<span style="color:var(--green)">✓ ${matched} catchers matched`;
+  if (unmatched.length) msg += ` · ${unmatched.length} unmatched (not in your pop time import): ${unmatched.join(', ')}`;
+  msg += `</span>`;
+  statusEl.innerHTML = msg;
+  if (matched > 0) renderTargets();
+}
+
+function importSBPctCSV() {
+  const raw = document.getElementById('sbpct-csv').value.trim();
+  const statusEl = document.getElementById('import-status');
+  if (!raw) { statusEl.innerHTML = '<i class="ti ti-alert-circle" style="color:var(--amber)"></i> Nothing pasted yet.'; return; }
+
+  const lines = raw.replace(/\r\n/g,'\n').replace(/\r/g,'\n').split('\n').map(l=>l.trim()).filter(Boolean);
+  if (lines.length < 2) { statusEl.innerHTML = '<i class="ti ti-alert-circle" style="color:var(--amber)"></i> Need at least a header and one data row.'; return; }
+
+  const delim = lines[0].includes('\t') ? '\t' : lines[0].includes(',') ? ',' : ' ';
+  function parseRow(line) {
+    if (delim === ',') {
+      const res = []; let cur = '', q = false;
+      for (const ch of line) {
+        if (ch === '"') q = !q;
+        else if (ch === ',' && !q) { res.push(cur.trim()); cur = ''; }
+        else cur += ch;
+      }
+      res.push(cur.trim()); return res;
+    }
+    return line.split(delim).map(s => s.trim().replace(/^"|"$/g,''));
+  }
+
+  const hdr = parseRow(lines[0]).map(c => c.toLowerCase().replace(/"/g,'').trim());
+
+  // Known Savant basestealing leaderboard columns:
+  // player_id | player_name | team_name | start_year | end_year | key_target_base |
+  // runs_stolen_on_running_act | n_init | rate_sbx | n_sb | n_cs | n_pk | n_bk | ...
+  function col(...names) {
+    for (const n of names) { const i = hdr.indexOf(n); if (i !== -1) return i; }
+    for (const n of names) { const i = hdr.findIndex(c => c.includes(n)); if (i !== -1) return i; }
+    return -1;
+  }
+
+  const nameCol  = col('player_name','entity_name','name');
+  const lastCol  = col('last_name');
+  const firstCol = col('first_name');
+  const sbCol    = col('n_sb');
+  const csCol    = col('n_cs');
+  const attCol   = col('n_init','n_att','attempts','att');  // n_init = total attempts on savant
+
+  if (nameCol === -1 && (lastCol === -1 || firstCol === -1)) {
+    statusEl.innerHTML = `<i class="ti ti-alert-triangle" style="color:var(--red)"></i> No name column found. Headers: <code>${hdr.slice(0,8).join(' | ')}</code>`;
+    return;
+  }
+  if (sbCol === -1 && attCol === -1) {
+    statusEl.innerHTML = `<i class="ti ti-alert-triangle" style="color:var(--red)"></i> No SB stats columns found. Headers: <code>${hdr.slice(0,8).join(' | ')}</code>`;
+    return;
+  }
+
+  let updated = 0, notFound = [], skipped = 0;
+
+  lines.slice(1).forEach(line => {
+    if (!line.trim()) return;
+    const c = parseRow(line);
+
+    // Build name — handle "Valenzuela, Brandon" format
+    let name = '';
+    if (lastCol !== -1 && firstCol !== -1) {
+      const last  = (c[lastCol]  || '').replace(/,+$/, '').trim();
+      const first = (c[firstCol] || '').trim();
+      name = (first + ' ' + last).trim();
+    } else if (nameCol !== -1) {
+      name = (c[nameCol] || '').trim();
+      // Flip "Last, First" → "First Last"
+      if (name.includes(',')) {
+        const ci = name.indexOf(',');
+        name = (name.slice(ci+1) + ' ' + name.slice(0,ci)).trim();
+      }
+    }
+    if (!name || name.length < 2) { skipped++; return; }
+
+    // Calculate SB% from n_sb / (n_sb + n_cs)
+    const sb  = parseInt(c[sbCol]  || '0') || 0;
+    const cs  = csCol  !== -1 ? (parseInt(c[csCol]  || '0') || 0) : 0;
+    const att = attCol !== -1 ? (parseInt(c[attCol] || '0') || 0) : sb + cs;
+
+    if (att < 1) { skipped++; return; }
+    const sbPct = att > 0 ? sb / att : null;
+    if (sbPct === null) { skipped++; return; }
+
+    // Match against existing runners
+    const xi = runners.findIndex(r => normName(r.name) === normName(name));
+    if (xi !== -1) {
+      runners[xi].sbPct = sbPct;
+      runners[xi].sba   = att;
+      updated++;
+    } else {
+      notFound.push(name);
+    }
+  });
+
+  document.getElementById('sbpct-csv').value = '';
+
+  let msg = `<i class="ti ti-check" style="color:var(--green)"></i> <strong>${updated}</strong> runners updated with SB%`;
+  if (skipped)         msg += ` · ${skipped} skipped (no attempts)`;
+  if (notFound.length) msg += `<br><span style="font-size:11px;color:var(--text-tertiary)">${notFound.length} not in runner list yet: ${notFound.slice(0,6).join(', ')}${notFound.length>6?' +more':''}</span>`;
+  statusEl.innerHTML = msg;
+  persist(); renderRunnerTable(); renderTargets();
+}
+
+/* ================================================================
+   LIVE FEED — SB + HR tracking via MLB Stats API play-by-play
+================================================================ */
+let liveInterval    = null;
+let liveSeenPlays   = new Set();
+let liveSBCount     = 0, liveCSCount    = 0;
+let liveGamesTracked = new Set();
+let liveActiveTab   = 'sb';
+
+async function startLiveFeed() {
+  document.getElementById('live-start-btn').style.display = 'none';
+  document.getElementById('live-stop-btn').style.display  = '';
+  document.getElementById('live-stats-bar').style.display = 'flex';
+  document.getElementById('live-status').innerHTML = '<span class="spinner"></span> Loading today\'s events...';
+  try {
+    const iso = getETDateISO(0);
+    const r = await fetch(`https://statsapi.mlb.com/api/v1/schedule?sportId=1&date=${iso}&gameType=R&hydrate=linescore,team`);
+    const d = await r.json();
+    const games = d?.dates?.[0]?.games || [];
+    alert(`Date: ${iso} | Games found: ${games.length} | Statuses: ${games.slice(0,4).map(g=>g.status?.abstractGameState).join(', ')}`);
+    await pollLiveFeed(true);
+  } catch(e) {
+    alert('Error: ' + e.message + '\n' + e.stack);
+    document.getElementById('live-status').textContent = 'Error: ' + e.message;
+  }
+  liveInterval = setInterval(() => pollLiveFeed(false), 30000);
+}
+
+function stopLiveFeed() {
+  clearInterval(liveInterval); liveInterval = null;
+  document.getElementById('live-start-btn').style.display = '';
+  document.getElementById('live-stop-btn').style.display  = 'none';
+  document.getElementById('live-status').textContent = 'Stopped';
+}
+
+function clearLiveFeed() {
+  liveSeenPlays.clear();
+  liveSBCount = liveCSCount = liveHRCount = liveAlmostCount = 0;
+  liveGamesTracked.clear();
+  document.getElementById('live-feed').innerHTML = '<div class="live-placeholder"><i class="ti ti-player-play" style="font-size:32px;display:block;margin-bottom:8px;opacity:0.4"></i>Click Start to begin tracking</div>';
+  updateLiveStats();
+}
+
+function updateLiveStats() {
+  document.getElementById('live-sb-count').textContent  = liveSBCount;
+  document.getElementById('live-cs-count').textContent  = liveCSCount;
+  const sbTotal = liveSBCount + liveCSCount;
+  document.getElementById('live-pct').textContent       = sbTotal > 0 ? Math.round(liveSBCount/sbTotal*100)+'%' : '—';
+  document.getElementById('live-games').textContent     = liveGamesTracked.size;
+}
+
+function addFeedCard(feedId, html, color) {
+  const feed = document.getElementById(feedId);
+  const placeholder = feed.querySelector('.live-placeholder');
+  if (placeholder) placeholder.remove();
+  const card = document.createElement('div');
+  card.style.cssText = `background:var(--bg-secondary);border-radius:8px;padding:12px 14px;border-left:3px solid ${color};animation:fadeIn 0.3s ease`;
+  card.innerHTML = html;
+  feed.insertBefore(card, feed.firstChild);
+  while (feed.children.length > 60) feed.removeChild(feed.lastChild);
+}
+
+async function pollLiveFeed(backfill=false) {
+  try {
+    const iso = getETDateISO(0);
+    const schedR = await fetch(`https://statsapi.mlb.com/api/v1/schedule?sportId=1&date=${iso}&gameType=R&hydrate=linescore,team`);
+    const schedD = await schedR.json();
+    const games  = schedD?.dates?.[0]?.games || [];
+    const liveGames  = games.filter(g => ['live','in progress'].some(s => (g.status?.abstractGameState||'').toLowerCase().includes(s) || (g.status?.detailedState||'').toLowerCase().includes('progress')));
+    const finalGames = games.filter(g => { const abs=(g.status?.abstractGameState||'').toLowerCase(); const det=(g.status?.detailedState||'').toLowerCase(); const isLive=liveGames.some(lg=>lg.gamePk===g.gamePk); return !isLive && abs!=='preview' && !det.includes('postponed') && !det.includes('cancelled') && abs!==''; });
+    // DEBUG
+    if (backfill) alert('Games: '+games.length+' | Live: '+liveGames.length+' | Final: '+finalGames.length+'\nStatuses: '+games.slice(0,3).map(g=>g.status?.abstractGameState+'/'+g.status?.detailedState).join(', ')+'\nDate used: '+iso);
+
+    // On backfill: process live + final games. On poll: only live.
+    // On backfill: process live + final. On poll: only live.
+    const gamesToProcess = backfill ? [...liveGames, ...finalGames] : liveGames;
+
+    if (!gamesToProcess.length) {
+      const upcoming = games.filter(g=>(g.status?.abstractGameState||'').toLowerCase()==='preview').length;
+      document.getElementById('live-status').textContent = `${upcoming} upcoming · ${finalGames.length} final · No active games`;
+      return;
+    }
+
+    if (backfill && gamesToProcess.length) {
+      document.getElementById('live-status').innerHTML =
+        `<span class="spinner"></span> Loading ${gamesToProcess.length} game${gamesToProcess.length!==1?'s':''} (${liveGames.length} live · ${finalGames.length} final)...`;
+    } else if (liveGames.length) {
+      document.getElementById('live-status').innerHTML =
+        `<span class="pill pill-live"><i class="ti ti-live"></i>${liveGames.length} live</span> Polling every 30s`;
+    }
+
+    await Promise.all(gamesToProcess.map(async g => {
+      try {
+        // Use playByPlay endpoint — lighter and more reliable than full live feed
+        const r = await fetch(`https://statsapi.mlb.com/api/v1/game/${g.gamePk}/playByPlay`);
+        if (!r.ok) return;
+        const d = await r.json();
+        const plays = d?.allPlays || [];
+
+        const awayAbbr = g.teams?.away?.team?.abbreviation || '?';
+        const homeAbbr = g.teams?.home?.team?.abbreviation || '?';
+        liveGamesTracked.add(g.gamePk);
+        const time = new Date().toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit',timeZone:'America/New_York'});
+
+        plays.forEach(play => {
+          const eventType = (play.result?.eventType || '').toLowerCase();
+          const eventName = (play.result?.event || '').toLowerCase();
+          const event = eventType || eventName; // use whichever is available
+          const desc = play.result?.event || play.result?.description || ''; // human-readable
+          const playId = [g.gamePk, play.about?.atBatIndex, play.about?.endTime, play.result?.event].filter(x=>x!==undefined&&x!==null).join('_') || String(Math.random());
+          if (liveSeenPlays.has(playId)) return;
+
+          // ── SB events ──
+          const descLower = desc.toLowerCase();
+          const eventHumanLower = eventName;
+          // event can be "Stolen Base" (capitalized) or eventType "stolen_base" (underscore)
+          const isSBEvent = event.includes('stolen_base') || event.includes('caught_stealing') ||
+            event.includes('pickoff') ||
+            eventHumanLower.includes('stolen base') || eventHumanLower.includes('caught stealing') ||
+            eventHumanLower.includes('pickoff') || eventHumanLower.includes('stolen') ||
+            (event === 'wild_pitch' && descLower.includes('steal')) ||
+            (event === 'passed_ball' && descLower.includes('steal')) ||
+            descLower.includes('stolen base') || descLower.includes('steals 2nd') ||
+            descLower.includes('steals 3rd') || descLower.includes('steals home') ||
+            descLower.includes('caught stealing') || descLower.includes('picked off') ||
+            descLower.includes('steals second') || descLower.includes('steals third');
+          if (isSBEvent) {
+            liveSeenPlays.add(playId);
+            const isSB = event.includes('stolen_base') || event.includes('stolen base') ||
+              eventName.includes('stolen base') ||
+              (descLower.includes('steals') && !descLower.includes('caught') && !descLower.includes('pickoff'));
+            const isCS = event.includes('caught_stealing') || event.includes('caught stealing') ||
+              event.includes('pickoff') || eventName.includes('caught stealing') || eventName.includes('pickoff');
+            if (isSB) liveSBCount++;
+            if (isCS) liveCSCount++;
+            // Get actual runner — play.runners has the person attempting to steal
+            const runnerEntry = (play.runners||[]).find(r =>
+              (r.details?.event||'').toLowerCase().includes('stolen') ||
+              (r.details?.event||'').toLowerCase().includes('caught') ||
+              (r.details?.event||'').toLowerCase().includes('pickoff'));
+            const runner  = runnerEntry?.details?.runner?.fullName || play.matchup?.batter?.fullName || '?';
+            const pitcher = play.matchup?.pitcher?.fullName || '?';
+            const batter  = runner; // use runner as the display name
+            const inning  = play.about?.inning || '?';
+            const half    = play.about?.isTopInning ? '▲' : '▼';
+            const battingTeam  = play.about?.isTopInning ? awayAbbr : homeAbbr;
+            const fieldingTeam = play.about?.isTopInning ? homeAbbr : awayAbbr;
+            const icon  = isSB?'✅':isCS?'❌':'⚠️';
+            const color = isSB?'var(--green)':isCS?'var(--red)':'var(--amber)';
+            const runnerMatch = runners.find(r=>normName(r.name)===normName(batter));
+            const scoreStr = runnerMatch ? `<span style="font-size:11px;color:var(--blue);margin-left:6px">SB Score: ${calcSBScore(runnerMatch,pitchers.find(p=>normName(p.name)===normName(pitcher)),catchers.find(c=>c.team===fieldingTeam))}</span>` : '';
+            addFeedCard('live-feed', `
+              <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px">
+                <div><span style="font-size:18px">${icon}</span><strong style="color:${color};margin-left:6px">${desc}</strong>${scoreStr}</div>
+                <span style="font-size:11px;color:var(--text-tertiary);white-space:nowrap">${time} ET</span>
+              </div>
+              <div style="font-size:12px;color:var(--text-secondary);margin-top:4px">
+                <strong>${batter}</strong> (${battingTeam}) vs <strong>${pitcher}</strong> (${fieldingTeam}) · ${half}${inning} · ${awayAbbr}@${homeAbbr}
+              </div>`, color);
+          }
+
+          updateLiveStats();
+        });
+      } catch(e2) { /* skip */ }
+    }));
+    // Update status after backfill
+    if (backfill) {
+      document.getElementById('live-status').innerHTML =
+        liveGames.length
+          ? `<span class="pill pill-live"><i class="ti ti-live"></i>${liveGames.length} live</span> Polling every 30s · ${finalGames.length} completed games loaded`
+          : `All today's events loaded · ${finalGames.length} completed games · Polling for new games`;
+    }
+  } catch(e) {
+    document.getElementById('live-status').textContent = `Error: ${e.message}`;
+  }
+}
+
+/* ================================================================
+   SB PROPS/* ================================================================
+   SB PROPS — The Odds API
+================================================================ */
+let sbProps = {}; // playerName (normalized) → {line, overOdds, underOdds, book}
+
+function renderSBProp(name) {
+  const key = normName(name);
+  const prop = sbProps[key];
+  if (!prop) return '<span style="color:var(--text-tertiary);font-size:11px">—</span>';
+  const overCls  = prop.overOdds  > 0 ? 'color:var(--green)' : 'color:var(--text-secondary)';
+  const underCls = prop.underOdds > 0 ? 'color:var(--green)' : 'color:var(--text-secondary)';
+  const fmt = o => o > 0 ? `+${o}` : `${o}`;
+  return `<span style="font-size:12px;font-weight:600">${prop.line} SB</span><br>
+    <span style="font-size:11px;${overCls}">o${fmt(prop.overOdds)}</span>
+    <span style="font-size:11px;color:var(--text-tertiary)"> / </span>
+    <span style="font-size:11px;${underCls}">u${fmt(prop.underOdds)}</span>
+    <br><span style="font-size:10px;color:var(--text-tertiary)">${prop.book||''}</span>`;
+}
+
+async function fetchSBProps() {
+  const apiKey = localStorage.getItem('oddsApiKey') || '';
+  if (!apiKey) {
+    alert('Add your Odds API key first — click the Odds button and paste your key from the-odds-api.com (free tier available).');
+    return;
+  }
+
+  const statusEl = document.getElementById('lineup-status');
+  const prevStatus = statusEl.innerHTML;
+  statusEl.innerHTML = '<span class="spinner"></span> Fetching SB props from The Odds API...';
+
+  try {
+    // Get today's MLB game IDs first
+    const schedUrl = `https://api.the-odds-api.com/v4/sports/baseball_mlb/odds/?apiKey=${apiKey}&regions=us&markets=h2h&oddsFormat=american&dateFormat=iso`;
+    const schedR = await fetch(schedUrl);
+    if (!schedR.ok) {
+      const err = await schedR.json();
+      throw new Error(err.message || `HTTP ${schedR.status}`);
+    }
+    const games = await schedR.json();
+    if (!games.length) { statusEl.innerHTML = prevStatus; alert('No MLB games found in Odds API.'); return; }
+
+    // Fetch player props for each game
+    sbProps = {};
+    let propsFound = 0;
+    let requestsLeft = schedR.headers.get('x-requests-remaining') || '?';
+
+    await Promise.all(games.map(async game => {
+      try {
+        const propUrl = `https://api.the-odds-api.com/v4/sports/baseball_mlb/events/${game.id}/odds?apiKey=${apiKey}&regions=us&markets=batter_stolen_bases&oddsFormat=american`;
+        const propR = await fetch(propUrl);
+        if (!propR.ok) return;
+        const propData = await propR.json();
+        requestsLeft = propR.headers.get('x-requests-remaining') || requestsLeft;
+
+        const bookmakers = propData.bookmakers || [];
+        // Prefer DraftKings, then FanDuel, then first available
+        const preferred = ['draftkings','fanduel','betmgm','caesars','pointsbet'];
+        let book = bookmakers.find(b => preferred.includes(b.key)) || bookmakers[0];
+        if (!book) return;
+
+        const market = (book.markets || []).find(m => m.key === 'batter_stolen_bases');
+        if (!market) return;
+
+        // Group outcomes by player — each player has over/under
+        const byPlayer = {};
+        (market.outcomes || []).forEach(o => {
+          const pKey = normName(o.description || o.name || '');
+          if (!byPlayer[pKey]) byPlayer[pKey] = { name: o.description || o.name, book: book.title };
+          if (o.name === 'Over')  { byPlayer[pKey].line = o.point; byPlayer[pKey].overOdds  = o.price; }
+          if (o.name === 'Under') { byPlayer[pKey].line = o.point; byPlayer[pKey].underOdds = o.price; }
+        });
+
+        Object.assign(sbProps, byPlayer);
+        propsFound += Object.keys(byPlayer).length;
+      } catch(e2) { /* skip individual game errors */ }
+    }));
+
+    statusEl.innerHTML = prevStatus;
+    if (propsFound === 0) {
+      alert('No SB props found. Props may not be available yet for today\'s games, or your bookmakers don\'t offer this market.\n\nRequests remaining: ' + requestsLeft);
+    } else {
+      renderTargets();
+      document.getElementById('lineup-paste-status') && (document.getElementById('lineup-paste-status').innerHTML =
+        `<span style="color:var(--green)">✓ ${propsFound} SB props loaded · ${requestsLeft} API requests remaining</span>`);
+    }
+  } catch(e) {
+    statusEl.innerHTML = prevStatus;
+    alert('Odds API error: ' + e.message + '\n\nCheck your API key and try again.');
+  }
+}
+
+/* ================================================================
+   HR TARGETS — DATA & SCORING
+================================================================ */
+
+function persistHR() {
+  localStorage.setItem('sb_batters',  JSON.stringify(batters));
+  localStorage.setItem('sb_pitchmix', JSON.stringify(pitchMix));
+}
+
+
+// ── Scoring functions (each 0–20 pts, total 100) ──
+function isoScore(iso) {
+  if (iso == null) return 10;
+  if (iso >= 0.280) return 20; if (iso >= 0.240) return 17;
+  if (iso >= 0.200) return 14; if (iso >= 0.170) return 11;
+  if (iso >= 0.140) return 8;  if (iso >= 0.110) return 5;
+  return 2;
+}
+function evScore(ev) {
+  if (ev == null) return 10;
+  if (ev >= 93.0) return 20; if (ev >= 91.0) return 17;
+  if (ev >= 89.0) return 14; if (ev >= 87.5) return 11;
+  if (ev >= 86.0) return 8;  if (ev >= 84.0) return 5;
+  return 2;
+}
+function laScore(la) {
+  // Ideal launch angle for HR: 25–35°
+  if (la == null) return 10;
+  if (la >= 25 && la <= 35) return 20;
+  if (la >= 22 && la <= 38) return 16;
+  if (la >= 18 && la <= 42) return 11;
+  if (la >= 12 && la <= 45) return 6;
+  return 2;
+}
+function barrelScore(b) {
+  if (b == null) return 10;
+  if (b >= 18) return 20; if (b >= 14) return 17;
+  if (b >= 10) return 14; if (b >= 7)  return 11;
+  if (b >= 5)  return 8;  if (b >= 3)  return 5;
+  return 2;
+}
+function pullBarrelScore(pb) {
+  if (pb == null) return 10;
+  if (pb >= 15) return 20; if (pb >= 12) return 17;
+  if (pb >= 9)  return 14; if (pb >= 6)  return 11;
+  if (pb >= 4)  return 8;  if (pb >= 2)  return 5;
+  return 2;
+}
+
+// Pitch mix matchup bonus/penalty (-10 to +10)
+// Fastball-heavy pitchers → favor power hitters
+// Soft/breaking-heavy pitchers → penalize slightly
+
+
+/* ================================================================
+   INIT
+================================================================ */
+// ── Fix numeric team IDs stored in catchers[] from Savant import ──
+(function fixCatcherTeams() {
+  const TID = {108:'LAA',109:'OAK',110:'BAL',111:'BOS',112:'CHC',113:'CIN',114:'CLE',115:'COL',116:'DET',117:'HOU',118:'KC',119:'LAD',120:'WSH',121:'NYM',133:'OAK',134:'PIT',135:'SD',136:'SEA',137:'SF',138:'STL',139:'TB',140:'TEX',141:'TOR',142:'MIN',143:'PHI',144:'ATL',145:'CWS',146:'MIA',147:'NYY',158:'MIL'};
+  let changed = false;
+  catchers = catchers.map(c => {
+    const n = parseInt(c.team);
+    if (!isNaN(n) && TID[n]) { changed = true; return {...c, team: TID[n]}; }
+    return c;
+  });
+  if (changed) persist();
+})();
+
+// ── Clean up any malformed runner names from previous imports ──
+(function cleanRunnerNames() {
+  let changed = false;
+  runners = runners.map(r => {
+    let name = r.name || '';
+    // Fix "Last, First Last, First" doubled pattern (Savant import artifact)
+    // Detect: string where second half = first half (with optional comma)
+    const half = Math.floor(name.length / 2);
+    if (name.length > 6) {
+      // Try splitting at middle and checking similarity
+      for (let split = half - 3; split <= half + 3; split++) {
+        const a = name.slice(0, split).replace(/,\s*/g,' ').trim().toLowerCase();
+        const b = name.slice(split).replace(/,\s*/g,' ').trim().toLowerCase();
+        if (a.length > 2 && b.length > 2 && (a === b || a.replace(/\s+/g,'') === b.replace(/\s+/g,''))) {
+          // Name is doubled — take first half and fix it
+          let fixed = name.slice(0, split).trim();
+          // If fixed is "Last, First" → flip to "First Last"
+          if (fixed.includes(',')) {
+            const ci = fixed.indexOf(',');
+            fixed = (fixed.slice(ci+1) + ' ' + fixed.slice(0,ci)).trim();
+          }
+          if (fixed !== name) { changed = true; return {...r, name: fixed}; }
+          break;
+        }
+      }
+    }
+    // Fix "Last, First" format (no doubling, just needs flipping)
+    if (name.includes(',')) {
+      const ci = name.indexOf(',');
+      const fixed = (name.slice(ci+1) + ' ' + name.slice(0,ci)).trim();
+      if (fixed !== name && !fixed.includes(',')) { changed = true; return {...r, name: fixed}; }
+    }
+    return r;
+  });
+  if (changed) persist();
+})();
+
+renderRunnerTable();
+renderPitcherTable();
+renderCatcherTable();
+renderTargets();
+fetchLineups();
+
+// ── Auto-refresh MLB Starters on page load if date has changed ──
+(function autoRefreshDaily() {
+  const today = new Date().toLocaleDateString('en-US', { timeZone: 'America/New_York' });
+  const lastLoaded = localStorage.getItem('sb_last_loaded_date');
+  if (lastLoaded !== today) {
+    localStorage.setItem('sb_last_loaded_date', today);
+    // Small delay so the page renders first
+    setTimeout(() => fetchMLBStarters(), 800);
+  }
+})();
+</script>
+</body>
+</html>
